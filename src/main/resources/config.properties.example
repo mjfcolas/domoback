@@ -1,0 +1,16 @@
+teleinfo.filetouse=linky.wav
+teleinfo.processrecord=1
+teleinfo.dbsavetime=30
+teleinfo.trametime=3000
+teleinfo.asktime=5
+
+meteo.dbsavetime=900
+meteo.asktime=60
+
+chauffage.asktime=1
+
+
+jdbc.driver=org.postgresql.Driver
+jdbc.url=jdbc:postgresql://IP/BDD
+jdbc.username=user
+jdbc.password=password
