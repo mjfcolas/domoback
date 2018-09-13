@@ -31,26 +31,25 @@ public class WindowCliInterface implements DataListener, WindowListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WindowCliInterface.class.getName());
 
-    protected static SimpleTheme theme = null;
+    private static final SimpleTheme theme;
 
-    protected DefaultTerminalFactory defaultTerminalFactory = new DefaultTerminalFactory();
-    protected Screen screen = null;
-    protected MODE mode = MODE.TELEINFO;
-    protected IFeatureWrapper featureWrapper = null;
-    protected WindowBasedTextGUI textGUI = null;
-    protected Window window = null;
-    protected Panel contentPanel = null;
+    private final DefaultTerminalFactory defaultTerminalFactory = new DefaultTerminalFactory();
+    private Screen screen = null;
+    private MODE mode = MODE.TELEINFO;
+    private IFeatureWrapper featureWrapper = null;
+    private WindowBasedTextGUI textGUI = null;
+    private Window window = null;
+    private Panel contentPanel = null;
     protected IChauffage chauffage = null;
 
+    private static final int COLUMN_SIZE = 10;
+    private static final double TMAX = 40;
 
-    protected static final int COLUMN_SIZE = 10;
-    protected static final double TMAX = 40;
-
-    protected EnumMap<MODE, Label> mainTitleLabels = new EnumMap<>(MODE.class);
-    protected EnumMap<ReturnKeys, Label> titleLabels = new EnumMap<>(ReturnKeys.class);
-    protected EnumMap<ReturnKeys, Label> valueLabels = new EnumMap<>(ReturnKeys.class);
-    protected Map<String, Label> tempIndicLabels = new HashMap<>();
-    protected Map<String, Label> intIndicLabels = new HashMap<>();
+    private final EnumMap<MODE, Label> mainTitleLabels = new EnumMap<>(MODE.class);
+    private final EnumMap<ReturnKeys, Label> titleLabels = new EnumMap<>(ReturnKeys.class);
+    private final EnumMap<ReturnKeys, Label> valueLabels = new EnumMap<>(ReturnKeys.class);
+    private final Map<String, Label> tempIndicLabels = new HashMap<>();
+    private final Map<String, Label> intIndicLabels = new HashMap<>();
 
     protected Map<String, String> infos = new HashMap<>();
 
@@ -59,18 +58,18 @@ public class WindowCliInterface implements DataListener, WindowListener {
         theme.setWindowDecorationRenderer(new EmptyWindowDecorationRenderer());
     }
 
-    public WindowCliInterface(IFeatureWrapper featureWrapper, IChauffage chauffage) {
+    public WindowCliInterface(final IFeatureWrapper featureWrapper, final IChauffage chauffage) {
         try {
             this.featureWrapper = featureWrapper;
             this.chauffage = chauffage;
 
-            for (IFeature feature : this.featureWrapper.getFeatures()) {
+            for (final IFeature feature : this.featureWrapper.getFeatures()) {
                 feature.subscribe(this);
             }
 
             this.initialiseLabels();
 
-            this.screen = defaultTerminalFactory.createScreen();
+            this.screen = this.defaultTerminalFactory.createScreen();
             this.screen.startScreen();
             this.screen.clear();
             this.textGUI = new MultiWindowTextGUI(this.screen, TextColor.ANSI.BLACK);
@@ -78,92 +77,92 @@ public class WindowCliInterface implements DataListener, WindowListener {
             this.window.setTheme(theme);
             this.window.addWindowListener(this);
 
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOGGER.error("An error occured", e);
             System.exit(-1);
         }
     }
 
-    protected void initialiseLabels() {
+    private void initialiseLabels() {
 
-        TextColor pureWhite = new RGB(255, 255, 255);
-        Label titleTeleinfo = this.createLabel(Bundles.messages().getProperty("gui.teleinfo.panel.title"), FLOATMODE.RIGHT, 2, 1);
+        final TextColor pureWhite = new RGB(255, 255, 255);
+        final Label titleTeleinfo = this.createLabel(Bundles.messages().getProperty("gui.teleinfo.panel.title"), FLOATMODE.RIGHT, 2, 1);
         titleTeleinfo.setForegroundColor(pureWhite);
-        Label titleMeteo = this.createLabel(Bundles.messages().getProperty("gui.meteo.panel.title"), FLOATMODE.RIGHT, 2, 1);
+        final Label titleMeteo = this.createLabel(Bundles.messages().getProperty("gui.meteo.panel.title"), FLOATMODE.RIGHT, 2, 1);
         titleMeteo.setForegroundColor(pureWhite);
-        Label titleChauff = this.createLabel(Bundles.messages().getProperty("gui.chauff.panel.title"), FLOATMODE.RIGHT, 2, 1);
+        final Label titleChauff = this.createLabel(Bundles.messages().getProperty("gui.chauff.panel.title"), FLOATMODE.RIGHT, 2, 1);
         titleChauff.setForegroundColor(pureWhite);
 
-        mainTitleLabels.put(MODE.TELEINFO, titleTeleinfo);
-        mainTitleLabels.put(MODE.METEO, titleMeteo);
-        mainTitleLabels.put(MODE.CHAUFFAGE, titleChauff);
+        this.mainTitleLabels.put(MODE.TELEINFO, titleTeleinfo);
+        this.mainTitleLabels.put(MODE.METEO, titleMeteo);
+        this.mainTitleLabels.put(MODE.CHAUFFAGE, titleChauff);
 
-        titleLabels.put(ReturnKeys.ADCO, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.address"), FLOATMODE.RIGHT, 2, 2));
-        titleLabels.put(ReturnKeys.OPTARIF, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.optarif"), FLOATMODE.RIGHT, 2, 3));
-        titleLabels.put(ReturnKeys.ISOUSC, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.isousc"), FLOATMODE.RIGHT, 2, 4));
-        titleLabels.put(ReturnKeys.HHPHC, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.trhor"), FLOATMODE.RIGHT, 6, 2));
-        titleLabels.put(ReturnKeys.HCHC, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.hc"), FLOATMODE.RIGHT, 6, 3));
-        titleLabels.put(ReturnKeys.HCHP, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.hp"), FLOATMODE.RIGHT, 6, 4));
-        titleLabels.put(ReturnKeys.IINST, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.iinst"), FLOATMODE.RIGHT, 2, 6));
+        this.titleLabels.put(ReturnKeys.ADCO, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.address"), FLOATMODE.RIGHT, 2, 2));
+        this.titleLabels.put(ReturnKeys.OPTARIF, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.optarif"), FLOATMODE.RIGHT, 2, 3));
+        this.titleLabels.put(ReturnKeys.ISOUSC, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.isousc"), FLOATMODE.RIGHT, 2, 4));
+        this.titleLabels.put(ReturnKeys.HHPHC, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.trhor"), FLOATMODE.RIGHT, 6, 2));
+        this.titleLabels.put(ReturnKeys.HCHC, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.hc"), FLOATMODE.RIGHT, 6, 3));
+        this.titleLabels.put(ReturnKeys.HCHP, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.hp"), FLOATMODE.RIGHT, 6, 4));
+        this.titleLabels.put(ReturnKeys.IINST, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.iinst"), FLOATMODE.RIGHT, 2, 6));
 
-        valueLabels.put(ReturnKeys.ADCO, this.createLabel("", FLOATMODE.LEFT, 3, 2));
-        valueLabels.put(ReturnKeys.OPTARIF, this.createLabel("", FLOATMODE.LEFT, 3, 3));
-        valueLabels.put(ReturnKeys.ISOUSC, this.createLabel("", FLOATMODE.LEFT, 3, 4));
-        valueLabels.put(ReturnKeys.HHPHC, this.createLabel("", FLOATMODE.LEFT, 7, 2));
-        valueLabels.put(ReturnKeys.HCHC, this.createLabel("", FLOATMODE.LEFT, 7, 3));
-        valueLabels.put(ReturnKeys.HCHP, this.createLabel("", FLOATMODE.LEFT, 7, 4));
-        valueLabels.put(ReturnKeys.IINST, this.createLabel("", FLOATMODE.LEFT, 3, 6));
+        this.valueLabels.put(ReturnKeys.ADCO, this.createLabel("", FLOATMODE.LEFT, 3, 2));
+        this.valueLabels.put(ReturnKeys.OPTARIF, this.createLabel("", FLOATMODE.LEFT, 3, 3));
+        this.valueLabels.put(ReturnKeys.ISOUSC, this.createLabel("", FLOATMODE.LEFT, 3, 4));
+        this.valueLabels.put(ReturnKeys.HHPHC, this.createLabel("", FLOATMODE.LEFT, 7, 2));
+        this.valueLabels.put(ReturnKeys.HCHC, this.createLabel("", FLOATMODE.LEFT, 7, 3));
+        this.valueLabels.put(ReturnKeys.HCHP, this.createLabel("", FLOATMODE.LEFT, 7, 4));
+        this.valueLabels.put(ReturnKeys.IINST, this.createLabel("", FLOATMODE.LEFT, 3, 6));
 
-        titleLabels.put(ReturnKeys.TEMP, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.tint"), FLOATMODE.RIGHT, 2, 2));
-        titleLabels.put(ReturnKeys.TEMP2, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.tcha"), FLOATMODE.RIGHT, 2, 3));
-        titleLabels.put(ReturnKeys.ABSPRE, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.pabs"), FLOATMODE.RIGHT, 2, 4));
-        titleLabels.put(ReturnKeys.RELPRE, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.prel"), FLOATMODE.RIGHT, 2, 5));
-        titleLabels.put(ReturnKeys.HYGROHUM, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.hum"), FLOATMODE.RIGHT, 2, 6));
+        this.titleLabels.put(ReturnKeys.TEMP, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.tint"), FLOATMODE.RIGHT, 2, 2));
+        this.titleLabels.put(ReturnKeys.TEMP2, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.tcha"), FLOATMODE.RIGHT, 2, 3));
+        this.titleLabels.put(ReturnKeys.ABSPRE, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.pabs"), FLOATMODE.RIGHT, 2, 4));
+        this.titleLabels.put(ReturnKeys.RELPRE, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.prel"), FLOATMODE.RIGHT, 2, 5));
+        this.titleLabels.put(ReturnKeys.HYGROHUM, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.hum"), FLOATMODE.RIGHT, 2, 6));
 
-        valueLabels.put(ReturnKeys.TEMP, this.createLabel("", FLOATMODE.LEFT, 3, 2));
-        valueLabels.put(ReturnKeys.TEMP2, this.createLabel("", FLOATMODE.LEFT, 3, 3));
-        valueLabels.put(ReturnKeys.ABSPRE, this.createLabel("", FLOATMODE.LEFT, 3, 4));
-        valueLabels.put(ReturnKeys.RELPRE, this.createLabel("", FLOATMODE.LEFT, 3, 5));
-        valueLabels.put(ReturnKeys.HYGROHUM, this.createLabel("", FLOATMODE.LEFT, 3, 6));
+        this.valueLabels.put(ReturnKeys.TEMP, this.createLabel("", FLOATMODE.LEFT, 3, 2));
+        this.valueLabels.put(ReturnKeys.TEMP2, this.createLabel("", FLOATMODE.LEFT, 3, 3));
+        this.valueLabels.put(ReturnKeys.ABSPRE, this.createLabel("", FLOATMODE.LEFT, 3, 4));
+        this.valueLabels.put(ReturnKeys.RELPRE, this.createLabel("", FLOATMODE.LEFT, 3, 5));
+        this.valueLabels.put(ReturnKeys.HYGROHUM, this.createLabel("", FLOATMODE.LEFT, 3, 6));
 
-        titleLabels.put(ReturnKeys.MODECHAUFF, this.createLabel(Bundles.messages().getProperty("gui.chauff.label.state"), FLOATMODE.RIGHT, 2, 2));
-        titleLabels.put(ReturnKeys.TEMPCHAUFF, this.createLabel(Bundles.messages().getProperty("gui.chauff.label.temp"), FLOATMODE.RIGHT, 2, 3));
+        this.titleLabels.put(ReturnKeys.MODECHAUFF, this.createLabel(Bundles.messages().getProperty("gui.chauff.label.state"), FLOATMODE.RIGHT, 2, 2));
+        this.titleLabels.put(ReturnKeys.TEMPCHAUFF, this.createLabel(Bundles.messages().getProperty("gui.chauff.label.temp"), FLOATMODE.RIGHT, 2, 3));
 
-        valueLabels.put(ReturnKeys.MODECHAUFF, this.createLabel("", FLOATMODE.LEFT, 3, 2));
-        valueLabels.put(ReturnKeys.TEMPCHAUFF, this.createLabel("", FLOATMODE.LEFT, 3, 3));
+        this.valueLabels.put(ReturnKeys.MODECHAUFF, this.createLabel("", FLOATMODE.LEFT, 3, 2));
+        this.valueLabels.put(ReturnKeys.TEMPCHAUFF, this.createLabel("", FLOATMODE.LEFT, 3, 3));
 
         this.createTempIndicator();
         this.createIntensityIndicator();
 
     }
 
-    protected void createTempIndicator() {
+    private void createTempIndicator() {
 
-        tempIndicLabels.put("0", this.createLabel("0 °C", FLOATMODE.LEFT, 1, 9));
-        tempIndicLabels.put("10", this.createLabel("10 °C", FLOATMODE.LEFT, 2, 9));
-        tempIndicLabels.put("20", this.createLabel("20 °C", FLOATMODE.LEFT, 3, 9));
-        tempIndicLabels.put("30", this.createLabel("30 °C", FLOATMODE.LEFT, 4, 9));
-        tempIndicLabels.put("40", this.createLabel("40 °C", FLOATMODE.LEFT, 5, 9));
-        tempIndicLabels.putAll(this.createBarre(1, 7, 4));
+        this.tempIndicLabels.put("0", this.createLabel("0 °C", FLOATMODE.LEFT, 1, 9));
+        this.tempIndicLabels.put("10", this.createLabel("10 °C", FLOATMODE.LEFT, 2, 9));
+        this.tempIndicLabels.put("20", this.createLabel("20 °C", FLOATMODE.LEFT, 3, 9));
+        this.tempIndicLabels.put("30", this.createLabel("30 °C", FLOATMODE.LEFT, 4, 9));
+        this.tempIndicLabels.put("40", this.createLabel("40 °C", FLOATMODE.LEFT, 5, 9));
+        this.tempIndicLabels.putAll(this.createBarre(1, 7, 4));
     }
 
-    protected void createIntensityIndicator() {
+    private void createIntensityIndicator() {
 
-        intIndicLabels.put("0", this.createLabel("| 0 %", FLOATMODE.LEFT, 1, 9));
-        intIndicLabels.put("20", this.createLabel("| 20 %", FLOATMODE.LEFT, 2, 9));
-        intIndicLabels.put("40", this.createLabel("| 40 %", FLOATMODE.LEFT, 3, 9));
-        intIndicLabels.put("60", this.createLabel("| 60 %", FLOATMODE.LEFT, 4, 9));
-        intIndicLabels.put("80", this.createLabel("| 80 %", FLOATMODE.LEFT, 5, 9));
-        intIndicLabels.put("100", this.createLabel("| 100 %", FLOATMODE.LEFT, 6, 9));
-        intIndicLabels.putAll(this.createBarre(1, 7, 5));
+        this.intIndicLabels.put("0", this.createLabel("| 0 %", FLOATMODE.LEFT, 1, 9));
+        this.intIndicLabels.put("20", this.createLabel("| 20 %", FLOATMODE.LEFT, 2, 9));
+        this.intIndicLabels.put("40", this.createLabel("| 40 %", FLOATMODE.LEFT, 3, 9));
+        this.intIndicLabels.put("60", this.createLabel("| 60 %", FLOATMODE.LEFT, 4, 9));
+        this.intIndicLabels.put("80", this.createLabel("| 80 %", FLOATMODE.LEFT, 5, 9));
+        this.intIndicLabels.put("100", this.createLabel("| 100 %", FLOATMODE.LEFT, 6, 9));
+        this.intIndicLabels.putAll(this.createBarre(1, 7, 5));
     }
 
-    protected Map<String, Label> createBarre(int posX, int posY, int length) {
+    private Map<String, Label> createBarre(final int posX, final int posY, final int length) {
 
-        Map<String, Label> result = new HashMap<>();
+        final Map<String, Label> result = new HashMap<>();
 
         Double dividedLength = (double) length * COLUMN_SIZE / 3;
-        Label label = new Label(StringUtils.repeat(' ', dividedLength.intValue()));
+        final Label label = new Label(StringUtils.repeat(' ', dividedLength.intValue()));
         label.setPreferredSize(new TerminalSize(dividedLength.intValue(), 1));
         label.setBackgroundColor(TextColor.ANSI.BLUE);
         label.setLayoutData(GridLayout.createLayoutData(GridLayout.Alignment.BEGINNING, GridLayout.Alignment.CENTER));
@@ -172,7 +171,7 @@ public class WindowCliInterface implements DataListener, WindowListener {
         label.setSize(new TerminalSize(dividedLength.intValue(), 1));
         result.put("1", label);
 
-        Label label2 = new Label(StringUtils.repeat(' ', dividedLength.intValue()));
+        final Label label2 = new Label(StringUtils.repeat(' ', dividedLength.intValue()));
         label2.setPreferredSize(new TerminalSize(dividedLength.intValue(), 1));
         label2.setBackgroundColor(TextColor.ANSI.YELLOW);
         label2.setLayoutData(GridLayout.createLayoutData(GridLayout.Alignment.BEGINNING, GridLayout.Alignment.CENTER));
@@ -183,7 +182,7 @@ public class WindowCliInterface implements DataListener, WindowListener {
 
         computedPos = posX * COLUMN_SIZE + 2 * dividedLength.intValue();
         dividedLength = length * COLUMN_SIZE - 2 * dividedLength;
-        Label label3 = new Label(StringUtils.repeat(' ', dividedLength.intValue()));
+        final Label label3 = new Label(StringUtils.repeat(' ', dividedLength.intValue()));
         label3.setPreferredSize(new TerminalSize(dividedLength.intValue(), 1));
         label3.setBackgroundColor(TextColor.ANSI.RED);
         label3.setLayoutData(GridLayout.createLayoutData(GridLayout.Alignment.BEGINNING, GridLayout.Alignment.CENTER));
@@ -194,28 +193,28 @@ public class WindowCliInterface implements DataListener, WindowListener {
         return result;
     }
 
-    protected void fillBarre(Map<String, Label> barre, double value, double max) {
-        double ratio1 = Math.min((value / max) * 3, 1);
-        double ratio2 = Math.max(0, Math.min((value / max) * 3 - 1, 1));
-        double ratio3 = Math.max(0, Math.min((value / max) * 3 - 2, 1));
+    private void fillBarre(final Map<String, Label> barre, final double value, final double max) {
+        final double ratio1 = Math.min((value / max) * 3, 1);
+        final double ratio2 = Math.max(0, Math.min((value / max) * 3 - 1, 1));
+        final double ratio3 = Math.max(0, Math.min((value / max) * 3 - 2, 1));
 
         this.fillOneBarreLabel(barre.get("1"), ratio1);
         this.fillOneBarreLabel(barre.get("2"), ratio2);
         this.fillOneBarreLabel(barre.get("3"), ratio3);
     }
 
-    protected void fillOneBarreLabel(Label label, double ratio) {
-        int spaceNumber = (int) (label.getPreferredSize().getColumns() * ratio);
+    private void fillOneBarreLabel(final Label label, final double ratio) {
+        final int spaceNumber = (int) (label.getPreferredSize().getColumns() * ratio);
         label.setText(StringUtils.repeat(' ', spaceNumber));
     }
 
-    protected Label createLabel(String labelTxt, FLOATMODE horiz, int posX, int posY) {
-        Label label = new Label(labelTxt);
+    private Label createLabel(final String labelTxt, final FLOATMODE horiz, final int posX, final int posY) {
+        final Label label = new Label(labelTxt);
         label.setForegroundColor(TextColor.ANSI.WHITE);
         label.setLayoutData(GridLayout.createLayoutData(GridLayout.Alignment.BEGINNING, GridLayout.Alignment.CENTER));
         int computedPos = posX * COLUMN_SIZE;
         if (horiz == FLOATMODE.RIGHT) {
-            int offset = COLUMN_SIZE - labelTxt.length();
+            final int offset = COLUMN_SIZE - labelTxt.length();
             computedPos += offset;
         }
         computedPos = Math.max(0, computedPos);
@@ -224,7 +223,7 @@ public class WindowCliInterface implements DataListener, WindowListener {
         return label;
     }
 
-    protected void createTeleinfoPanel() {
+    private void createTeleinfoPanel() {
 
         this.contentPanel = new Panel(new AbsoluteLayout());
         this.contentPanel.setTheme(theme);
@@ -247,15 +246,15 @@ public class WindowCliInterface implements DataListener, WindowListener {
         this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.HCHP));
         this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.IINST));
 
-        for (Label current : this.intIndicLabels.values()) {
+        for (final Label current : this.intIndicLabels.values()) {
             this.contentPanel.addComponent(current);
         }
 
-        this.window.setComponent(contentPanel);
+        this.window.setComponent(this.contentPanel);
 
     }
 
-    protected void createMeteoPanel() {
+    private void createMeteoPanel() {
 
         this.contentPanel = new Panel(new AbsoluteLayout());
         this.contentPanel.setTheme(theme);
@@ -274,14 +273,14 @@ public class WindowCliInterface implements DataListener, WindowListener {
         this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.RELPRE));
         this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.HYGROHUM));
 
-        for (Label current : this.tempIndicLabels.values()) {
+        for (final Label current : this.tempIndicLabels.values()) {
             this.contentPanel.addComponent(current);
         }
 
-        this.window.setComponent(contentPanel);
+        this.window.setComponent(this.contentPanel);
     }
 
-    protected void createChauffagePanel() {
+    private void createChauffagePanel() {
 
         this.contentPanel = new Panel(new AbsoluteLayout());
         this.contentPanel.setTheme(theme);
@@ -294,23 +293,24 @@ public class WindowCliInterface implements DataListener, WindowListener {
         this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.MODECHAUFF));
         this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.TEMPCHAUFF));
 
-        this.window.setComponent(contentPanel);
+        this.window.setComponent(this.contentPanel);
     }
 
+    @Override
     public void changedOccured() {
         try {
-            this.infos = featureWrapper.getFeaturesInfos();
+            this.infos = this.featureWrapper.getFeaturesInfos();
             this.changedTeleinfo();
             this.changedMeteo();
             this.changedChauffage();
             this.resizeValueLabels();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error("An error occured", e);
         }
     }
 
     private void resizeValueLabels() {
-        for (Label label : valueLabels.values()) {
+        for (final Label label : this.valueLabels.values()) {
             label.setSize(new TerminalSize(Math.max(COLUMN_SIZE, label.getText().length()), 1));
         }
     }
@@ -360,17 +360,17 @@ public class WindowCliInterface implements DataListener, WindowListener {
 
     public void displayInterface() {
         this.createTeleinfoPanel();
-        textGUI.addWindowAndWait(window);
+        this.textGUI.addWindowAndWait(this.window);
     }
 
-    private void changeMode(MODE mode) {
+    private void changeMode(final MODE mode) {
         if (this.mode != mode) {
             this.mode = mode;
             this.updateDisplayTrame();
         }
     }
 
-    private String addUnit(String base, UNITS unit) {
+    private String addUnit(final String base, final UNITS unit) {
         String result = base;
         result += " ";
         if (UNITS.C.equals(unit)) {
@@ -388,9 +388,9 @@ public class WindowCliInterface implements DataListener, WindowListener {
     }
 
     @Override
-    public void onInput(Window basePane, KeyStroke keyStroke, AtomicBoolean deliverEvent) {
+    public void onInput(final Window basePane, final KeyStroke keyStroke, final AtomicBoolean deliverEvent) {
         if (keyStroke.getKeyType() == KeyType.Escape) {
-            window.close();
+            this.window.close();
         } else if (keyStroke.getKeyType() == KeyType.F1) {
             this.changeMode(MODE.TELEINFO);
         } else if (keyStroke.getKeyType() == KeyType.F2) {
@@ -401,27 +401,27 @@ public class WindowCliInterface implements DataListener, WindowListener {
 
         if (this.mode == MODE.CHAUFFAGE) {
             if (keyStroke.getKeyType() == KeyType.F9) {
-                chauffage.save();
+                this.chauffage.save();
             } else if (keyStroke.getKeyType() == KeyType.ArrowUp) {
-                chauffage.changeTemperature(true);
+                this.chauffage.changeTemperature(true);
             } else if (keyStroke.getKeyType() == KeyType.ArrowDown) {
-                chauffage.changeTemperature(false);
+                this.chauffage.changeTemperature(false);
             }
         }
     }
 
     @Override
-    public void onUnhandledInput(Window basePane, KeyStroke keyStroke, AtomicBoolean hasBeenHandled) {
+    public void onUnhandledInput(final Window basePane, final KeyStroke keyStroke, final AtomicBoolean hasBeenHandled) {
         //Pas d'actions sur cet évènement
     }
 
     @Override
-    public void onResized(Window window, TerminalSize oldSize, TerminalSize newSize) {
+    public void onResized(final Window window, final TerminalSize oldSize, final TerminalSize newSize) {
         //Pas d'actions sur cet évènement
     }
 
     @Override
-    public void onMoved(Window window, TerminalPosition oldPosition, TerminalPosition newPosition) {
+    public void onMoved(final Window window, final TerminalPosition oldPosition, final TerminalPosition newPosition) {
         //Pas d'actions sur cet évènement
     }
 }

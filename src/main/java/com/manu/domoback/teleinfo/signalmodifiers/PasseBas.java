@@ -5,31 +5,30 @@ import java.util.List;
 
 public class PasseBas {
 
-    protected double g;//Gain
-    protected double fc;//Fréquence de coupure
-    protected double fe; //Fréquence d'échantillonage
-    protected double wc;//Pulsation virtuelle de coupure
+    private final double g;//Gain
+    private final double fc;//Fréquence de coupure
+    private final double wc;//Pulsation virtuelle de coupure
     protected double a;// Coef devant le le buffer des sorties
-    protected double b;// Coef devant la somme des sorties
+    private final double b;// Coef devant la somme des sorties
 
-    public PasseBas(double g, double fc, double fe) {
+    public PasseBas(final double g, final double fc, final double fe) {
         this.g = g;
         this.fc = fc;
         this.wc = Math.tan(Math.PI * fc / fe);
-        this.a = (1 - wc) / (1 + wc);
-        this.b = (g * wc) / (1 + (1 / wc));
+        this.a = (1 - this.wc) / (1 + this.wc);
+        this.b = (g * this.wc) / (1 + (1 / this.wc));
     }
 
-    public List<Integer> processSignal(List<Integer> input) {
+    public List<Integer> processSignal(final List<Integer> input) {
 
-        List<Integer> output = new ArrayList<>(input.size());
+        final List<Integer> output = new ArrayList<>(input.size());
 
-        double[] bufferInput = {0};
-        double[] bufferOutput = {0};
+        final double[] bufferInput = { 0 };
+        final double[] bufferOutput = { 0 };
 
-        for (int i = 0; i < input.size(); i++) {
-            double currentInput = input.get(i);
-            double currentOutput = this.a * bufferOutput[0] + this.b * (currentInput + bufferInput[0]);
+        for (final Integer current : input) {
+            final double currentInput = current;
+            final double currentOutput = this.a * bufferOutput[0] + this.b * (currentInput + bufferInput[0]);
             bufferInput[0] = currentInput;
             bufferOutput[0] = currentOutput;
 

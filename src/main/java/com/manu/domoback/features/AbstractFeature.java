@@ -16,30 +16,33 @@ public abstract class AbstractFeature implements IFeature {
 
     private final EventListenerList listeners = new EventListenerList();
 
-    public void subscribe(DataListener listener) {
-        listeners.add(DataListener.class, listener);
+    @Override
+    public void subscribe(final DataListener listener) {
+        this.listeners.add(DataListener.class, listener);
     }
 
-    public void unsubscribe(DataListener listener) {
-        listeners.remove(DataListener.class, listener);
+    @Override
+    public void unsubscribe(final DataListener listener) {
+        this.listeners.remove(DataListener.class, listener);
     }
 
-    public DataListener[] getListeners() {
-        return listeners.getListeners(DataListener.class);
+    private DataListener[] getListeners() {
+        return this.listeners.getListeners(DataListener.class);
     }
 
-    protected void fireDataChanged() {
+    void fireDataChanged() {
         LOGGER.trace("AbstractFeature.fireDataChanged");
-        for (DataListener listener : getListeners()) {
+        for (final DataListener listener : this.getListeners()) {
             listener.changedOccured();
         }
     }
 
+    @Override
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public AbstractFeature(IJdbc jdbc) {
+    public AbstractFeature(final IJdbc jdbc) {
         this.jdbc = jdbc;
     }
 

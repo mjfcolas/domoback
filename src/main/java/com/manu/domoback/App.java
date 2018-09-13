@@ -22,39 +22,38 @@ class App {
     private static final IFeatureWrapper featureWrapper = new FeatureWrapper(meteo, chauffage, teleinfo);
     private static final WindowCliInterface cliInterface = new WindowCliInterface(featureWrapper, chauffage);
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
 
         LOGGER.info("Start Program");
         //Initialisation de la communication série
         arduinoReader.initialize();
 
         //Timers pour gérer la météo
-        long askTimeMeteo = Long.parseLong(Bundles.prop().getProperty("meteo.asktime"));
+        final long askTimeMeteo = Long.parseLong(Bundles.prop().getProperty("meteo.asktime"));
 
-        Timer meteoTimer = new Timer();
+        final Timer meteoTimer = new Timer();
         meteoTimer.schedule(new FeatureRunner(meteo), 0, askTimeMeteo * 1000);
-        Timer meteoTimer2 = new Timer();
+        final Timer meteoTimer2 = new Timer();
         meteoTimer2.schedule(new FeatureRunner(meteo2), 0, askTimeMeteo * 1000);
 
-
-        long dbSaveTimeMeteo = Integer.parseInt(Bundles.prop().getProperty("meteo.dbsavetime"));
-        Timer meteoSaveTimer = new Timer();
-        Timer meteoSaveTimer2 = new Timer();
+        final long dbSaveTimeMeteo = Integer.parseInt(Bundles.prop().getProperty("meteo.dbsavetime"));
+        final Timer meteoSaveTimer = new Timer();
+        final Timer meteoSaveTimer2 = new Timer();
         meteoSaveTimer.schedule(new FeatureSaver(meteo), 0, dbSaveTimeMeteo * 1000);
         meteoSaveTimer2.schedule(new FeatureSaver(meteo2), 0, dbSaveTimeMeteo * 1000);
 
         //Timer pour gérer le chauffage
-        Timer chauffageTimer = new Timer();
-        long askTimeChauffage = Long.parseLong(Bundles.prop().getProperty("chauffage.asktime"));
+        final Timer chauffageTimer = new Timer();
+        final long askTimeChauffage = Long.parseLong(Bundles.prop().getProperty("chauffage.asktime"));
         chauffageTimer.schedule(new FeatureRunner(chauffage), 0, askTimeChauffage * 1000);
 
         //Timers pour gérer la téléinfo
-        Timer teleinfoTimer = new Timer();
-        long askTimeTeleinfo = Long.parseLong(Bundles.prop().getProperty("teleinfo.asktime"));
+        final Timer teleinfoTimer = new Timer();
+        final long askTimeTeleinfo = Long.parseLong(Bundles.prop().getProperty("teleinfo.asktime"));
         teleinfoTimer.schedule(new FeatureRunner(teleinfo), 0, askTimeTeleinfo * 1000);
 
-        Timer teleinfoSaveTimer = new Timer();
-        long dbSaveTimeTeleinfo = Long.parseLong(Bundles.prop().getProperty("teleinfo.dbsavetime"));
+        final Timer teleinfoSaveTimer = new Timer();
+        final long dbSaveTimeTeleinfo = Long.parseLong(Bundles.prop().getProperty("teleinfo.dbsavetime"));
         teleinfoSaveTimer.schedule(new FeatureSaver(teleinfo), 0, dbSaveTimeTeleinfo * 1000);
 
         //Initialisation de l'interface

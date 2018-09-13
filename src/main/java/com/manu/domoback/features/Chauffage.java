@@ -18,12 +18,12 @@ public class Chauffage extends AbstractFeature implements IChauffage {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Chauffage.class.getName());
 
-    private IArduinoReader arduinoReader;
-    private IChauffageInfo chauffageInfo = new ChauffageInfo();
+    private final IArduinoReader arduinoReader;
+    private final IChauffageInfo chauffageInfo = new ChauffageInfo();
     private int loopsSinceLastSync = 0;
     private boolean syncRunning = false;
 
-    public Chauffage(IArduinoReader arduinoReader, IJdbc jdbc) {
+    public Chauffage(final IArduinoReader arduinoReader, final IJdbc jdbc) {
         super(jdbc);
         this.arduinoReader = arduinoReader;
 
@@ -33,56 +33,56 @@ public class Chauffage extends AbstractFeature implements IChauffage {
     public void run() {
         LOGGER.trace("Chauffage.run");
         try {
-            fillInfos();
-            if (arduinoReader.isReady()) {
+            this.fillInfos();
+            if (this.arduinoReader.isReady()) {
                 LOGGER.trace("Chauffage.run - arduino ready ");
                 //Lecture de l'état du chauffage d'après l'arduino si disponible
-                IExternalInfos arduinoInfos = arduinoReader.getInfos();
-                Boolean arduinChauffageState = arduinoInfos.getChauffageState();
+                final IExternalInfos arduinoInfos = this.arduinoReader.getInfos();
+                final Boolean arduinChauffageState = arduinoInfos.getChauffageState();
                 if (arduinChauffageState != null) {
                     LOGGER.debug("Synchro OK");
-                    chauffageInfo.setChauffageState(arduinChauffageState);
-                    chauffageInfo.setChauffageStateKnown(true);
-                    syncRunning = false;
+                    this.chauffageInfo.setChauffageState(arduinChauffageState);
+                    this.chauffageInfo.setChauffageStateKnown(true);
+                    this.syncRunning = false;
                 }
 
                 //Etat du chauffage connu, on peut gérer la commande
-                if (chauffageInfo.getChauffageStateKnown()) {
+                if (this.chauffageInfo.getChauffageStateKnown()) {
                     LOGGER.trace("Potentielle commande chauffage");
                     this.sendCommand();
-                } else if (!chauffageInfo.getChauffageStateKnown() && !syncRunning) {//Etat du chauffage inconnu, on synchronise
+                } else if (!this.chauffageInfo.getChauffageStateKnown() && !this.syncRunning) {//Etat du chauffage inconnu, on synchronise
                     LOGGER.debug("Demande synchro");
-                    syncRunning = true;
-                    arduinoReader.writeData("CHINFO");
+                    this.syncRunning = true;
+                    this.arduinoReader.writeData("CHINFO");
                 }
 
-                loopsSinceLastSync++;
+                this.loopsSinceLastSync++;
                 //Tous les 1000 tours de boucle, on considère qu'il faut resynchroniser l'état du chauffage
-                if (loopsSinceLastSync > 1000) {
+                if (this.loopsSinceLastSync > 1000) {
                     LOGGER.debug("Annulation synchro");
-                    loopsSinceLastSync = 0;
-                    syncRunning = false;
-                    chauffageInfo.setChauffageStateKnown(false);
+                    this.loopsSinceLastSync = 0;
+                    this.syncRunning = false;
+                    this.chauffageInfo.setChauffageStateKnown(false);
                 }
             }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             LOGGER.error("Erreur de récupération des informations de chauffage", e);
         }
     }
 
     private UnsureBoolean getCommand() {
         //Le chauffage doit être éteint
-        if (chauffageInfo.getChauffageState() && !chauffageInfo.getChauffageMode()) {
+        if (this.chauffageInfo.getChauffageState() && !this.chauffageInfo.getChauffageMode()) {
             LOGGER.trace("Chauffage eteint car mode OFF");
             return new UnsureBoolean(false);
-        } else if (chauffageInfo.getChauffageMode() && arduinoReader.getInfos() != null) {//Le chauffage est en mode allumé, il faut voir s'il faut réguler la température
+        } else if (this.chauffageInfo.getChauffageMode() && this.arduinoReader.getInfos() != null) {//Le chauffage est en mode allumé, il faut voir s'il faut réguler la température
             LOGGER.trace("Recup température appartement");
-            Float curTemp = arduinoReader.getInfos().getTemperature();
+            final Float curTemp = this.arduinoReader.getInfos().getTemperature();
 
             if (curTemp != null) {
-                LOGGER.trace("Comparaison température: commande : " + chauffageInfo.getChauffageTemp() + ", current: " + curTemp);
-                boolean chauffageToLow = chauffageInfo.getChauffageTemp() >= curTemp;
-                boolean chauffageToHigh = chauffageInfo.getChauffageTemp() < curTemp;
+                LOGGER.trace("Comparaison température: commande : " + this.chauffageInfo.getChauffageTemp() + ", current: " + curTemp);
+                final boolean chauffageToLow = this.chauffageInfo.getChauffageTemp() >= curTemp;
+                final boolean chauffageToHigh = this.chauffageInfo.getChauffageTemp() < curTemp;
 
                 if (chauffageToLow) {
                     LOGGER.trace("Chauffage a allumer");
@@ -99,18 +99,18 @@ public class Chauffage extends AbstractFeature implements IChauffage {
 
     private void sendCommand() {
         LOGGER.trace("Chauffage.sendCommand");
-        UnsureBoolean potentialCommand = this.getCommand();
-        Boolean chauffageState = chauffageInfo.getChauffageState();
+        final UnsureBoolean potentialCommand = this.getCommand();
+        final Boolean chauffageState = this.chauffageInfo.getChauffageState();
         LOGGER.trace("Send command");
         if (potentialCommand.isSure() && chauffageState != null && chauffageState != potentialCommand.state()) {
-            arduinoReader.writeData("CHAUFF " + (potentialCommand.state() ? "1" : "0"));
-            chauffageInfo.setChauffageState(potentialCommand.state());
+            this.arduinoReader.writeData("CHAUFF " + (potentialCommand.state() ? "1" : "0"));
+            this.chauffageInfo.setChauffageState(potentialCommand.state());
         }
     }
 
     @Override
     public Map<String, String> getInfos() {
-        return formatInfos();
+        return this.formatInfos();
     }
 
     @Override
@@ -119,15 +119,14 @@ public class Chauffage extends AbstractFeature implements IChauffage {
         this.fireDataChanged();
     }
 
-
     @Override
-    public void changeTemperature(boolean up) {
+    public void changeTemperature(final boolean up) {
         try {
-            int temp = jdbc.getCurrentTemp();
+            int temp = this.jdbc.getCurrentTemp();
             temp += up ? 1 : -1;
-            jdbc.setCurrentTemp(temp);
-            fillInfos();
-        } catch (SQLException e) {
+            this.jdbc.setCurrentTemp(temp);
+            this.fillInfos();
+        } catch (final SQLException e) {
             LOGGER.error("Erreur de sauvegarde de la nouvelle température", e);
         }
 
@@ -135,45 +134,45 @@ public class Chauffage extends AbstractFeature implements IChauffage {
 
     private void fillInfos() throws SQLException {
         LOGGER.trace("Chauffage.fillInfos");
-        Boolean oldMode = chauffageInfo.getChauffageMode();
-        Boolean newMode = jdbc.getCommandeChauffage();
-        Integer oldTemp = chauffageInfo.getChauffageTemp();
-        Integer newTemp = jdbc.getCurrentTemp();
+        final Boolean oldMode = this.chauffageInfo.getChauffageMode();
+        final Boolean newMode = this.jdbc.getCommandeChauffage();
+        final Integer oldTemp = this.chauffageInfo.getChauffageTemp();
+        final Integer newTemp = this.jdbc.getCurrentTemp();
 
-        chauffageInfo.setChauffageMode(newMode);
-        chauffageInfo.setChauffageTemp(newTemp);
+        this.chauffageInfo.setChauffageMode(newMode);
+        this.chauffageInfo.setChauffageTemp(newTemp);
 
-        if (detectChange(oldMode, newMode, oldTemp, newTemp)) {
+        if (this.detectChange(oldMode, newMode, oldTemp, newTemp)) {
             this.fireDataChanged();
         }
     }
 
-    protected boolean detectChange(Boolean oldMode, Boolean newMode, Integer oldTemp, Integer newTemp) {
-        return oldTemp != newTemp || oldMode != newMode;
+    private boolean detectChange(final Boolean oldMode, final Boolean newMode, final Integer oldTemp, final Integer newTemp) {
+        return !oldTemp.equals(newTemp) || !oldMode.equals(newMode);
     }
 
     private void switchChauffage() {
         try {
-            chauffageInfo.setChauffageMode(jdbc.switchCommandeChauffage());
-        } catch (SQLException e) {
+            this.chauffageInfo.setChauffageMode(this.jdbc.switchCommandeChauffage());
+        } catch (final SQLException e) {
             LOGGER.error("Erreur de sauvegarde du switch chauffage", e);
         }
     }
 
-    public IChauffageInfo getChauffageInfo() {
+    IChauffageInfo getChauffageInfo() {
         return this.chauffageInfo;
     }
 
     private Map<String, String> formatInfos() {
-        Map<String, String> infos = new HashMap<>();
-        if (chauffageInfo != null && chauffageInfo.getChauffageTemp() != null) {
-            infos.put(INFOS.TEMPCHAUFF.name(), chauffageInfo.getChauffageTemp().toString());
+        final Map<String, String> infos = new HashMap<>();
+        if (this.chauffageInfo.getChauffageTemp() != null) {
+            infos.put(INFOS.TEMPCHAUFF.name(), this.chauffageInfo.getChauffageTemp().toString());
         } else {
             infos.put(INFOS.TEMPCHAUFF.name(), "N/A");
         }
 
-        if (chauffageInfo != null && chauffageInfo.getChauffageMode() != null) {
-            if (chauffageInfo.getChauffageMode()) {
+        if (this.chauffageInfo.getChauffageMode() != null) {
+            if (this.chauffageInfo.getChauffageMode()) {
                 infos.put(INFOS.MODECHAUFF.name(), "ON");
             } else {
                 infos.put(INFOS.MODECHAUFF.name(), "OFF");

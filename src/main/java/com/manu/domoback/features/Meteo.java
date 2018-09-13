@@ -14,95 +14,95 @@ public class Meteo extends AbstractFeature implements IMeteo {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Meteo.class.getName());
 
-    private IArduinoReader arduinoReader;
+    private final IArduinoReader arduinoReader;
     private IExternalInfos meteoInfos;
-    private String key;
+    private final String key;
 
-    public Meteo(IArduinoReader arduinoReader, IJdbc jdbc, String key) {
+    public Meteo(final IArduinoReader arduinoReader, final IJdbc jdbc, final String key) {
         super(jdbc);
         this.name = key;
         this.key = key;
         this.arduinoReader = arduinoReader;
     }
 
+    @Override
     public void run() {
-        if (arduinoReader.isReady()) {
+        if (this.arduinoReader.isReady()) {
             LOGGER.debug("Meteo thread running");
             //Information Arduino
             LOGGER.debug("METEO before writeData");
-            arduinoReader.writeData(key);
-            meteoInfos = arduinoReader.getInfos();
+            this.arduinoReader.writeData(this.key);
+            this.meteoInfos = this.arduinoReader.getInfos();
             this.fireDataChanged();
         }
     }
 
     @Override
     public IExternalInfos getRawInfos() {
-        return meteoInfos;
+        return this.meteoInfos;
     }
 
     @Override
     public Map<String, String> getInfos() {
-        return formatInfos();
+        return this.formatInfos();
     }
 
     @Override
     public void save() {
         try {
-            if (meteoInfos != null) {
+            if (this.meteoInfos != null) {
                 int type = 1;
-                Float temperature = meteoInfos.getTemperature();
-                if ("METEO2".equals(key)) {
+                Float temperature = this.meteoInfos.getTemperature();
+                if ("METEO2".equals(this.key)) {
                     type = 2;
-                    temperature = meteoInfos.getTemperature2();
+                    temperature = this.meteoInfos.getTemperature2();
                 }
-                jdbc.saveMeteoInfos(temperature,
-                        meteoInfos.getPressionRelative(),
-                        meteoInfos.getPressionAbsolue(),
-                        meteoInfos.getHygrometrie(),
+                this.jdbc.saveMeteoInfos(temperature,
+                        this.meteoInfos.getPressionRelative(),
+                        this.meteoInfos.getPressionAbsolue(),
+                        this.meteoInfos.getHygrometrie(),
                         type);
             }
 
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error("Erreur de sauvegarde météo", e);
         }
 
     }
 
     private Map<String, String> formatInfos() {
-        Map<String, String> infos = new HashMap<>();
-        if (meteoInfos != null && meteoInfos.getTemperature() != null) {
-            infos.put(INFOS.TEMP.name(), meteoInfos.getTemperature().toString());
+        final Map<String, String> infos = new HashMap<>();
+        if (this.meteoInfos != null && this.meteoInfos.getTemperature() != null) {
+            infos.put(INFOS.TEMP.name(), this.meteoInfos.getTemperature().toString());
         } else {
             infos.put(INFOS.TEMP.name(), "N/A");
         }
 
-        if (meteoInfos != null && meteoInfos.getTemperature2() != null) {
-            infos.put(INFOS.TEMP2.name(), meteoInfos.getTemperature2().toString());
+        if (this.meteoInfos != null && this.meteoInfos.getTemperature2() != null) {
+            infos.put(INFOS.TEMP2.name(), this.meteoInfos.getTemperature2().toString());
         } else {
             infos.put(INFOS.TEMP2.name(), "N/A");
         }
 
-        if (meteoInfos != null && meteoInfos.getPressionAbsolue() != null) {
-            infos.put(INFOS.ABSPRE.name(), meteoInfos.getPressionAbsolue().toString());
+        if (this.meteoInfos != null && this.meteoInfos.getPressionAbsolue() != null) {
+            infos.put(INFOS.ABSPRE.name(), this.meteoInfos.getPressionAbsolue().toString());
         } else {
             infos.put(INFOS.ABSPRE.name(), "N/A");
         }
 
-        if (meteoInfos != null && meteoInfos.getPressionRelative() != null) {
-            infos.put(INFOS.RELPRE.name(), meteoInfos.getPressionRelative().toString());
+        if (this.meteoInfos != null && this.meteoInfos.getPressionRelative() != null) {
+            infos.put(INFOS.RELPRE.name(), this.meteoInfos.getPressionRelative().toString());
         } else {
             infos.put(INFOS.RELPRE.name(), "N/A");
         }
 
-        if (meteoInfos != null && meteoInfos.getHygrometrie() != null) {
-            infos.put(INFOS.HYGROHUM.name(), meteoInfos.getHygrometrie().toString());
+        if (this.meteoInfos != null && this.meteoInfos.getHygrometrie() != null) {
+            infos.put(INFOS.HYGROHUM.name(), this.meteoInfos.getHygrometrie().toString());
         } else {
             infos.put(INFOS.HYGROHUM.name(), "N/A");
         }
 
         return infos;
     }
-
 
 }

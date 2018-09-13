@@ -9,14 +9,14 @@ import java.util.List;
 public class PointWriter {
 
     protected int size;
-    protected String fileName;
-    protected List<List<Integer>> integerSignals;
-    protected List<BooleanSignal> booleanSignals;
+    private final String fileName;
+    private final List<List<Integer>> integerSignals;
+    private final List<BooleanSignal> booleanSignals;
 
-    protected int startIndex = 0;
-    protected int stopIndex = 0;
+    private final int startIndex;
+    private final int stopIndex;
 
-    public PointWriter(String fileName, List<List<Integer>> integerSignals, List<BooleanSignal> booleanSignals) {
+    public PointWriter(final String fileName, final List<List<Integer>> integerSignals, final List<BooleanSignal> booleanSignals) {
         this.fileName = fileName;
         this.integerSignals = integerSignals;
         if (!integerSignals.isEmpty()) {
@@ -29,7 +29,7 @@ public class PointWriter {
         this.stopIndex = this.size - 1;
     }
 
-    public PointWriter(int startIndex, int stopIndex, String fileName, List<List<Integer>> integerSignals, List<BooleanSignal> booleanSignals) {
+    public PointWriter(final int startIndex, final int stopIndex, final String fileName, final List<List<Integer>> integerSignals, final List<BooleanSignal> booleanSignals) {
         this.fileName = fileName;
         this.integerSignals = integerSignals;
         if (!integerSignals.isEmpty()) {
@@ -42,21 +42,20 @@ public class PointWriter {
         this.stopIndex = stopIndex;
     }
 
-
     public void printFile() throws IOException {
-        PrintWriter fichier = new PrintWriter(new FileWriter(this.fileName), false);
-        for (Integer i = startIndex; i < stopIndex; i++) {
+        final PrintWriter fichier = new PrintWriter(new FileWriter(this.fileName), false);
+        for (Integer i = this.startIndex; i < this.stopIndex; i++) {
 
-            List<Integer> currentAmps = new ArrayList<>();
+            final List<Integer> currentAmps = new ArrayList<>();
 
-            for (List<Integer> signal : integerSignals) {
+            for (final List<Integer> signal : this.integerSignals) {
                 currentAmps.add(signal.get(i));
             }
-            for (BooleanSignal signal : booleanSignals) {
+            for (final BooleanSignal signal : this.booleanSignals) {
                 currentAmps.add(signal.getSignal().get(i) ? signal.getHighAmp() : signal.getLowAmp());
             }
-            StringBuilder toPrint = new StringBuilder(i.toString());
-            for (Integer amplitude : currentAmps) {
+            final StringBuilder toPrint = new StringBuilder(i.toString());
+            for (final Integer amplitude : currentAmps) {
                 toPrint.append(" ").append(amplitude);
             }
 

@@ -3,22 +3,20 @@ package com.manu.domoback.teleinfo.signalmodifiers;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class Carre {
 
-    private int triggerVersHaut;
-    private int triggerVersBas;
-    private boolean inverseBits;
+    private final int triggerVersHaut;
+    private final int triggerVersBas;
+    private final boolean inverseBits;
 
-    private int pointsDansPeriode;
-    private int pointsPourChanger;
+    private final int pointsDansPeriode;
+    private final int pointsPourChanger;
 
-    private List<Integer> inputSignal;
+    private final List<Integer> inputSignal;
     private List<Boolean> outputRawSignal;
     private List<Boolean> outputTreatedSignal;
 
-
-    public Carre(CarreParam params, List<Integer> inputSignal) {
+    public Carre(final CarreParam params, final List<Integer> inputSignal) {
         this.triggerVersHaut = params.triggerVersHaut;
         this.triggerVersBas = params.triggerVersBas;
         this.inverseBits = params.inverseBits;
@@ -30,20 +28,19 @@ public class Carre {
     }
 
     public List<Boolean> processSignal() {
-        List<Boolean> output = new ArrayList<>(this.inputSignal.size());
+        final List<Boolean> output = new ArrayList<>(this.inputSignal.size());
 
-        boolean currentOutput = false;
+        boolean currentOutput;
         boolean oldOutput = false;
-        for (int i = 0; i < this.inputSignal.size(); i++) {
-            int currentIndex = i;
-            int oldIndex = i > 1 ? i - 1 : 0;
+        for (int currentIndex = 0; currentIndex < this.inputSignal.size(); currentIndex++) {
+            final int oldIndex = currentIndex > 1 ? currentIndex - 1 : 0;
 
-            if (this.inputSignal.get(currentIndex) > triggerVersHaut
+            if (this.inputSignal.get(currentIndex) > this.triggerVersHaut
                     && this.inputSignal.get(oldIndex) < this.inputSignal.get(currentIndex)
                     && !oldOutput) {
                 currentOutput = true;
                 oldOutput = true;
-            } else if (this.inputSignal.get(currentIndex) < triggerVersBas
+            } else if (this.inputSignal.get(currentIndex) < this.triggerVersBas
                     && this.inputSignal.get(oldIndex) > this.inputSignal.get(currentIndex)
                     && oldOutput) {
                 currentOutput = false;
@@ -58,18 +55,18 @@ public class Carre {
     }
 
     public List<Boolean> lisserSignal() {
-        List<Boolean> output = new ArrayList<>(this.outputRawSignal.size());
+        final List<Boolean> output = new ArrayList<>(this.outputRawSignal.size());
 
         for (int i = 0; i < this.outputRawSignal.size(); i++) {
-            boolean oldValue = this.outputRawSignal.get(i > 1 ? i - 1 : 0);
+            final boolean oldValue = this.outputRawSignal.get(i > 1 ? i - 1 : 0);
 
             if (oldValue != this.outputRawSignal.get(i)) {
 
                 //Si on détecte un changement, on regarde les points suivants pour voir s'ils ont tous la même valeur
-                boolean critereAccepte = acceptCritereLissage(i);
+                final boolean critereAccepte = this.acceptCritereLissage(i);
                 //Si le critere n'a pas été accepté, on égalise tous les points au premier point qui a changé
                 if (!critereAccepte) {
-                    lisserPartSignal(i);
+                    this.lisserPartSignal(i);
                 }
 
             }
@@ -87,9 +84,9 @@ public class Carre {
      * @param startIndex index de départ
      * @return true si le critère est accepté
      */
-    private boolean acceptCritereLissage(int startIndex) {
+    private boolean acceptCritereLissage(final int startIndex) {
         boolean critereAccepte = true;
-        for (int j = startIndex; j < startIndex + pointsPourChanger; j++) {
+        for (int j = startIndex; j < startIndex + this.pointsPourChanger; j++) {
             if (j < this.outputRawSignal.size() && this.outputRawSignal.get(startIndex) != this.outputRawSignal.get(j)) {
                 critereAccepte = false;
             }
@@ -101,10 +98,10 @@ public class Carre {
      * Egalise les points qui suivent le point passé en paramètre, sur une longueur égale au critère de changement
      * au même état que le premier quand le critère de changement d'état n'est pas accepté
      *
-     * @param startIndex
+     * @param startIndex Index de départ
      */
-    private void lisserPartSignal(int startIndex) {
-        for (int j = startIndex; j < startIndex + pointsPourChanger; j++) {
+    private void lisserPartSignal(final int startIndex) {
+        for (int j = startIndex; j < startIndex + this.pointsPourChanger; j++) {
             if (j < this.outputRawSignal.size()) {
                 this.outputRawSignal.set(j, this.outputRawSignal.get(startIndex));
             }
@@ -112,15 +109,15 @@ public class Carre {
     }
 
     public List<Boolean> getBitsFromSignal() {
-        List<Boolean> output = new ArrayList<>(this.outputTreatedSignal.size());
+        final List<Boolean> output = new ArrayList<>(this.outputTreatedSignal.size());
 
         int localSum = 0;
         for (int i = 1; i < this.outputTreatedSignal.size(); i++) {
             if (this.outputTreatedSignal.get(i - 1) != this.outputTreatedSignal.get(i)) {
-                double periodNumberDouble = (double) localSum / (double) this.pointsDansPeriode;
-                long periodNumberLong = Math.round(periodNumberDouble);
+                final double periodNumberDouble = (double) localSum / (double) this.pointsDansPeriode;
+                final long periodNumberLong = Math.round(periodNumberDouble);
                 //Remplissage de la liste de bits à partir de la liste de points traités
-                fillBitlist(periodNumberLong, output);
+                this.fillBitlist(periodNumberLong, output);
                 localSum = 0;
             } else {
                 localSum += this.outputTreatedSignal.get(i) ? 1 : -1;
@@ -131,7 +128,7 @@ public class Carre {
 
     }
 
-    private void fillBitlist(long periodNumber, List<Boolean> output) {
+    private void fillBitlist(final long periodNumber, final List<Boolean> output) {
         if (periodNumber > 0) {
             for (int j = 0; j < periodNumber; j++) {
                 output.add(!this.inverseBits);

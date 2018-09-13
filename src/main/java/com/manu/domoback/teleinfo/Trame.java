@@ -7,33 +7,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class Trame {
 
-    protected static boolean doubleStopBit = true;
-    protected static final boolean[] LF = AsciiBitUtils.getBitsWithControlsForChar(ControlChars.LF, doubleStopBit);
-    protected static final int CHAR_SIZE = doubleStopBit ? 11 : 10; //Taille d'un caractère avec les bits de controle
+    private static final boolean doubleStopBit = true;
+    private static final boolean[] LF = AsciiBitUtils.getBitsWithControlsForChar(ControlChars.LF, doubleStopBit);
+    private static final int CHAR_SIZE = doubleStopBit ? 11 : 10; //Taille d'un caractère avec les bits de controle
 
-    protected List<Boolean> signal;
+    private final List<Boolean> signal;
     protected int size;
-    protected List<Character> caracteres;
-    protected boolean inError = false;
+    private List<Character> caracteres;
+    private boolean inError = false;
     protected Map<String, String> infos = new HashMap<>();
-    protected Map<String, String> formatedInfos = new HashMap<>();
+    private final Map<String, String> formatedInfos = new HashMap<>();
 
-    public Trame(List<Boolean> signal) {
+    Trame(final List<Boolean> signal) {
         this.signal = signal;
         this.size = signal.size();
     }
 
-    public void computeChars() {
+    void computeChars() {
 
-        List<Character> result = new ArrayList<>();
+        final List<Character> result = new ArrayList<>();
 
         int i = 0;
         boolean treatList = true;
         while (treatList) {
-            List<Boolean> currentChar = signal.subList(i, i + CHAR_SIZE);
+            final List<Boolean> currentChar = this.signal.subList(i, i + CHAR_SIZE);
             if (this.isCharError(currentChar)) {
                 result.add((char) 0);
             } else {
@@ -42,25 +41,25 @@ public class Trame {
             i += CHAR_SIZE;
             if (result.get(result.size() - 1) == ControlChars.CR) {
                 try {
-                    i = getNextLfIndex(i);
-                } catch (TrameEndException e) {
+                    i = this.getNextLfIndex(i);
+                } catch (final TrameEndException e) {
                     treatList = false;
                 }
             }
-            if (i + CHAR_SIZE >= size) {
+            if (i + CHAR_SIZE >= this.size) {
                 treatList = false;
             }
         }
         this.caracteres = result;
-        checkTrame();
+        this.checkTrame();
     }
 
-    private int getNextLfIndex(int startIndex) throws TrameEndException {
+    private int getNextLfIndex(final int startIndex) throws TrameEndException {
         for (int j = 0; j < CHAR_SIZE; j++) {
-            if (startIndex + j >= size) {
+            if (startIndex + j >= this.size) {
                 throw new TrameEndException(); //Fin du signal
-            } else if (signal.get(startIndex + j) != LF[j]) {//Un caractère est mauvais ou fin de la liste
-                return getNextLfIndex(startIndex + 1);
+            } else if (this.signal.get(startIndex + j) != LF[j]) {//Un caractère est mauvais ou fin de la liste
+                return this.getNextLfIndex(startIndex + 1);
             }
         }
 
@@ -68,13 +67,13 @@ public class Trame {
     }
 
     public String getTrameTxt() {
-        StringBuilder output = new StringBuilder();
+        final StringBuilder output = new StringBuilder();
         if (this.inError) {
             output.append("ERROR  :");
         } else {
             output.append("SUCCESS:");
         }
-        for (Character character : caracteres) {
+        for (final Character character : this.caracteres) {
             if (character > 0x1F) {
                 output.append(character);
             }
@@ -82,9 +81,9 @@ public class Trame {
         return output.toString();
     }
 
-    private void addInfo(String key, String value) {
-        if (!infos.containsKey(key)) {
-            infos.put(key, value);
+    private void addInfo(final String key, final String value) {
+        if (!this.infos.containsKey(key)) {
+            this.infos.put(key, value);
         }
     }
 
@@ -93,7 +92,7 @@ public class Trame {
         StringBuilder currentValue = new StringBuilder();
         boolean keyMode = false;
         boolean valueMode = false;
-        for (Character character : caracteres) {
+        for (final Character character : this.caracteres) {
 
             if (keyMode && character != ControlChars.SP) {//Caractere de la clé
                 currentKey.append(character);
@@ -112,7 +111,7 @@ public class Trame {
             } else if (character == ControlChars.CR) {//Fin du groupe d'information
                 keyMode = false;
                 valueMode = false;
-                addInfo(currentKey.toString(), currentValue.toString());
+                this.addInfo(currentKey.toString(), currentValue.toString());
             } else if (character == ControlChars.EOT) {//EOT : la trame a été interrompue
                 break;
             }
@@ -121,26 +120,26 @@ public class Trame {
     }
 
     public void formatInfos() {
-        for (Map.Entry<String, String> entry : this.infos.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            String formatedValue = "";
+        for (final Map.Entry<String, String> entry : this.infos.entrySet()) {
+            final String key = entry.getKey();
+            final String value = entry.getValue();
+            final String formatedValue;
 
             if ("HCHC".equals(key) || "HCHP".equals(key)) {
                 formatedValue = Integer.toString(Integer.parseInt(value));
             } else if ("OPTARIF".equals(key)) {
-                formatedValue = formatOptarif(value);
+                formatedValue = this.formatOptarif(value);
             } else if ("HHPHC".equals(key)) {
-                formatedValue = formatTrancheHoraire(value);
+                formatedValue = this.formatTrancheHoraire(value);
             } else {
                 formatedValue = value;
             }
-            formatedInfos.put(key, formatedValue);
+            this.formatedInfos.put(key, formatedValue);
         }
     }
 
-    private String formatTrancheHoraire(String value) {
-        String formatedValue = "";
+    private String formatTrancheHoraire(final String value) {
+        final String formatedValue;
         if ("1".equals(value)) {
             formatedValue = "Heures creuses";
         } else {
@@ -149,19 +148,19 @@ public class Trame {
         return formatedValue;
     }
 
-    private String formatOptarif(String value) {
+    private String formatOptarif(final String value) {
         String formatedValue = "";
         if ("BASE".equals(value)) {
             formatedValue = "Base";
         } else if ("HC..".equals(value)) {
             formatedValue = "Heures creuses";
-        } else if (value == "HP..") {
+        } else if ("HP..".equals(value)) {
             formatedValue = "Heures pleines";
         }
         return formatedValue;
     }
 
-    private boolean isCharError(List<Boolean> caractere) {
+    private boolean isCharError(final List<Boolean> caractere) {
         //Bit de start
         if (caractere.get(0)) {
             this.inError = true;
@@ -197,7 +196,7 @@ public class Trame {
             if (this.caracteres.get(this.caracteres.size() - 1) != ControlChars.CR) {
                 this.inError = true;
             }
-            char checksum = this.caracteres.get(this.caracteres.size() - 2);
+            final char checksum = this.caracteres.get(this.caracteres.size() - 2);
             if (checksum < 0x20 || checksum > 0x5F) {
                 this.inError = true;
             }
@@ -205,15 +204,15 @@ public class Trame {
     }
 
     public Map<String, String> getInfos() {
-        return infos;
+        return this.infos;
     }
 
     public Map<String, String> getFormatedInfos() {
-        return formatedInfos;
+        return this.formatedInfos;
     }
 
     public boolean isInError() {
-        return inError;
+        return this.inError;
     }
 
 }

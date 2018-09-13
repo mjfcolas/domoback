@@ -17,54 +17,52 @@ import java.util.List;
 
 public class WavFile {
     private static final Logger LOGGER = LoggerFactory.getLogger(WavFile.class.getName());
-    private static final int NOT_SPECIFIED = AudioSystem.NOT_SPECIFIED; // -1
 
-    private int sampleSize = NOT_SPECIFIED;
-    private long framesCount = NOT_SPECIFIED;
-    private int sampleRate = NOT_SPECIFIED;
-    private int channelsNum;
-    private byte[] data;      // wav bytes
-    private AudioFormat af;
+    private final int sampleSize;
+    private final long framesCount;
+    private final int sampleRate;
+    private final int channelsNum;
+    private final byte[] data;      // wav bytes
+    private final AudioFormat af;
 
-    public WavFile(File file) throws UnsupportedAudioFileException, IOException {
+    WavFile(final File file) throws UnsupportedAudioFileException, IOException {
         if (!file.exists()) {
             throw new FileNotFoundException(file.getAbsolutePath());
         }
 
-        AudioInputStream ais;
+        final AudioInputStream ais;
         ais = AudioSystem.getAudioInputStream(file);
 
-        af = ais.getFormat();
-        framesCount = ais.getFrameLength();
-        sampleRate = (int) af.getSampleRate();
-        sampleSize = af.getSampleSizeInBits() / 8;
-        channelsNum = af.getChannels();
+        this.af = ais.getFormat();
+        this.framesCount = ais.getFrameLength();
+        this.sampleRate = (int) this.af.getSampleRate();
+        this.sampleSize = this.af.getSampleSizeInBits() / 8;
+        this.channelsNum = this.af.getChannels();
 
-        long dataLength = framesCount * af.getSampleSizeInBits() * af.getChannels() / 8;
+        final long dataLength = this.framesCount * this.af.getSampleSizeInBits() * this.af.getChannels() / 8;
 
-        data = new byte[(int) dataLength];
-        if (ais.read(data) < 0) {
+        this.data = new byte[(int) dataLength];
+        if (ais.read(this.data) < 0) {
             LOGGER.error("Aucune données audio à lire");
             throw new IOException("Aucune données audio à lire");
         }
     }
 
-    public AudioFormat getAudioFormat() {
-        return af;
+    private AudioFormat getAudioFormat() {
+        return this.af;
     }
 
     public int getSampleSize() {
-        return sampleSize;
+        return this.sampleSize;
     }
 
     public double getDurationTime() {
-        return getFramesCount() / getAudioFormat().getFrameRate();
+        return this.getFramesCount() / this.getAudioFormat().getFrameRate();
     }
 
-    public long getFramesCount() {
-        return framesCount;
+    private long getFramesCount() {
+        return this.framesCount;
     }
-
 
     /**
      * Returns sample (amplitude value). Note that in case of stereo samples
@@ -72,30 +70,30 @@ public class WavFile {
      * sample of the right channel, 2 - second sample of the left channel, 3 -
      * second sample of the rigth channel, etc.
      */
-    public int getSampleInt(int sampleNumber) {
+    private int getSampleInt(final int sampleNumber) {
 
-        if (sampleNumber < 0 || sampleNumber >= data.length / sampleSize) {
+        if (sampleNumber < 0 || sampleNumber >= this.data.length / this.sampleSize) {
             throw new IllegalArgumentException(
                     "sample number can't be < 0 or >= data.length/"
-                            + sampleSize);
+                            + this.sampleSize);
         }
 
-        byte[] sampleBytes = new byte[4]; //4byte = int
+        final byte[] sampleBytes = new byte[4]; //4byte = int
 
-        for (int i = 0; i < sampleSize; i++) {
-            sampleBytes[i] = data[sampleNumber * sampleSize * channelsNum + i];
+        for (int i = 0; i < this.sampleSize; i++) {
+            sampleBytes[i] = this.data[sampleNumber * this.sampleSize * this.channelsNum + i];
         }
 
         return ByteBuffer.wrap(sampleBytes)
                 .order(ByteOrder.LITTLE_ENDIAN).getInt();
     }
 
-    public List<Integer> getSignal() {
+    List<Integer> getSignal() {
 
-        long total = this.getFramesCount();
-        List<Integer> result = new ArrayList<>((int) total);
+        final long total = this.getFramesCount();
+        final List<Integer> result = new ArrayList<>((int) total);
 
-        int maxPositive = (int) Math.pow(2, (double) this.sampleSize * 8) / 2;
+        final int maxPositive = (int) Math.pow(2, (double) this.sampleSize * 8) / 2;
 
         for (int i = 0; i < total; i++) {
             int amplitude = this.getSampleInt(i);
@@ -109,7 +107,7 @@ public class WavFile {
         return result;
     }
 
-    public int getSampleRate() {
-        return sampleRate;
+    int getSampleRate() {
+        return this.sampleRate;
     }
 }

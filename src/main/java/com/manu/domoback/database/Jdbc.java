@@ -9,6 +9,7 @@ public class Jdbc implements IJdbc {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Jdbc.class.getName());
 
+    @Override
     public Boolean getCommandeChauffage() throws SQLException {
         LOGGER.trace("Jdbc.getCommandeChauffage");
         try (Connection connection = DataSource.getInstance().getConnection();
@@ -16,7 +17,7 @@ public class Jdbc implements IJdbc {
 
             LOGGER.trace("Jdbc.getCommandeChauffage - Connection got");
 
-            Boolean currentMode = getCommandeChauffageInternal(statement);
+            final Boolean currentMode = this.getCommandeChauffageInternal(statement);
             if (currentMode == null) {
                 throw new SQLException("Aucune valeur de commande déja présente");
             }
@@ -25,68 +26,73 @@ public class Jdbc implements IJdbc {
         }
     }
 
+    @Override
     public Boolean switchCommandeChauffage() throws SQLException {
-        String sql = "INSERT INTO com_chauff (onoff) VALUES (?)";
+        final String sql = "INSERT INTO com_chauff (onoff) VALUES (?)";
         try (Connection connection = DataSource.getInstance().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql);
              Statement statement = connection.createStatement()) {
 
-            Boolean currentMode = getCommandeChauffageInternal(statement);
-                preparedStatement.setBoolean(1, !currentMode);
-                preparedStatement.executeUpdate();
+            final Boolean currentMode = this.getCommandeChauffageInternal(statement);
+            preparedStatement.setBoolean(1, !currentMode);
+            preparedStatement.executeUpdate();
             return !currentMode;
         }
     }
 
-    public void saveMeteoInfos(Float temperature, Float pressionRel, Float pressionAbs, Float hygro, Integer type) {
+    @Override
+    public void saveMeteoInfos(final Float temperature, final Float pressionRel, final Float pressionAbs, final Float hygro, final Integer type) {
         try (Connection connection = DataSource.getInstance().getConnection();
              Statement statement = connection.createStatement()) {
             if (temperature != null) {
-                saveTemperature(temperature, statement, type);
+                this.saveTemperature(temperature, statement, type);
             }
             if (pressionAbs != null && pressionRel != null) {
-                savePression(pressionRel, pressionAbs, statement);
+                this.savePression(pressionRel, pressionAbs, statement);
             }
             if (hygro != null) {
-                saveHygro(hygro, statement);
+                this.saveHygro(hygro, statement);
             }
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             LOGGER.error("An error occured", ex);
         }
 
     }
 
-    public void saveTeleinfos(Integer iInst, Integer hcAmount, Integer hpAmount) {
+    @Override
+    public void saveTeleinfos(final Integer iInst, final Integer hcAmount, final Integer hpAmount) {
         try (Connection connection = DataSource.getInstance().getConnection();
              Statement statement = connection.createStatement()) {
             saveIntensity(iInst, statement);
-            saveEdfIndex(hcAmount, 1, statement);
-            saveEdfIndex(hpAmount, 2, statement);
-        } catch (Exception ex) {
+            this.saveEdfIndex(hcAmount, 1, statement);
+            this.saveEdfIndex(hpAmount, 2, statement);
+        } catch (final Exception ex) {
             LOGGER.error("An error occured", ex);
         }
 
     }
 
-    public void setCurrentTemp(int temp) {
-        String sql = "INSERT INTO temp_chauff (temp) VALUES (?)";
+    @Override
+    public void setCurrentTemp(final int temp) {
+        final String sql = "INSERT INTO temp_chauff (temp) VALUES (?)";
         try (Connection connection = DataSource.getInstance().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                preparedStatement.setInt(1, temp);
-                preparedStatement.executeUpdate();
-        } catch (Exception ex) {
+            preparedStatement.setInt(1, temp);
+            preparedStatement.executeUpdate();
+        } catch (final Exception ex) {
             LOGGER.error("An error occured", ex);
         }
 
     }
 
+    @Override
     public Integer getCurrentTemp() throws SQLException {
         LOGGER.trace("Jdbc.getCurrentTemp");
         try (Connection connection = DataSource.getInstance().getConnection();
              Statement statement = connection.createStatement()) {
             Integer result = null;
 
-            String sql = "SELECT temp FROM temp_chauff ORDER BY ID DESC LIMIT 1";
+            final String sql = "SELECT temp FROM temp_chauff ORDER BY ID DESC LIMIT 1";
 
             try (ResultSet rs = statement.executeQuery(sql)) {
                 while (rs.next()) {
@@ -101,37 +107,37 @@ public class Jdbc implements IJdbc {
         }
     }
 
-    private static void saveIntensity(Integer intensity, Statement statement) throws SQLException {
-        String sql = "INSERT INTO intensity (value)VALUES (" + intensity.toString() + ")";
+    private static void saveIntensity(final Integer intensity, final Statement statement) throws SQLException {
+        final String sql = "INSERT INTO intensity (value)VALUES (" + intensity.toString() + ")";
         statement.executeUpdate(sql);
     }
 
-    private void saveEdfIndex(Integer index, Integer type, Statement statement) throws SQLException {
-        String sql = "INSERT INTO edfindex (value, type)VALUES (" + index.toString() + ", " + type.toString() + ")";
+    private void saveEdfIndex(final Integer index, final Integer type, final Statement statement) throws SQLException {
+        final String sql = "INSERT INTO edfindex (value, type)VALUES (" + index.toString() + ", " + type.toString() + ")";
         statement.executeUpdate(sql);
     }
 
-    private void saveTemperature(Float temperature, Statement statement, Integer type) throws SQLException {
-        String sql = "INSERT INTO temperature (value, type)VALUES ("
+    private void saveTemperature(final Float temperature, final Statement statement, final Integer type) throws SQLException {
+        final String sql = "INSERT INTO temperature (value, type)VALUES ("
                 + temperature.toString() + ", "
                 + type.toString() + ")";
         statement.executeUpdate(sql);
     }
 
-    private void savePression(Float pressionRel, Float pressionAbs, Statement statement) throws SQLException {
-        String sql = "INSERT INTO pression (valueabs, valuerel)VALUES ("
+    private void savePression(final Float pressionRel, final Float pressionAbs, final Statement statement) throws SQLException {
+        final String sql = "INSERT INTO pression (valueabs, valuerel)VALUES ("
                 + pressionAbs.toString() + ", "
                 + pressionRel.toString() + ")";
         statement.executeUpdate(sql);
     }
 
-    private void saveHygro(Float value, Statement statement) throws SQLException {
-        String sql = "INSERT INTO hygro (value) VALUES (" + value.toString() + ")";
+    private void saveHygro(final Float value, final Statement statement) throws SQLException {
+        final String sql = "INSERT INTO hygro (value) VALUES (" + value.toString() + ")";
         statement.executeUpdate(sql);
     }
 
-    private Boolean getCommandeChauffageInternal(Statement statement) throws SQLException {
-        String sql = "SELECT onoff FROM com_chauff ORDER BY ID DESC LIMIT 1";
+    private Boolean getCommandeChauffageInternal(final Statement statement) throws SQLException {
+        final String sql = "SELECT onoff FROM com_chauff ORDER BY ID DESC LIMIT 1";
         Boolean currentMode = null;
         try (ResultSet rs = statement.executeQuery(sql)) {
             while (rs.next()) {

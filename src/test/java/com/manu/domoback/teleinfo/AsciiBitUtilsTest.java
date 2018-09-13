@@ -9,14 +9,14 @@ public class AsciiBitUtilsTest extends TestCase {
     public void testGetInversedBitsForChar() {
 
         boolean[] bits = AsciiBitUtils.getInversedBitsForChar('A');
-        boolean[] resultA = {true, false, false, false, false, false, true};
+        final boolean[] resultA = { true, false, false, false, false, false, true };
         assertEquals(7, bits.length);
         for (int i = 0; i < bits.length; i++) {
             assertEquals(resultA[i], bits[i]);
         }
 
         bits = AsciiBitUtils.getInversedBitsForChar('C');
-        boolean[] resultC = {true, true, false, false, false, false, true};
+        final boolean[] resultC = { true, true, false, false, false, false, true };
         assertEquals(7, bits.length);
         for (int i = 0; i < bits.length; i++) {
             assertEquals(resultC[i], bits[i]);
