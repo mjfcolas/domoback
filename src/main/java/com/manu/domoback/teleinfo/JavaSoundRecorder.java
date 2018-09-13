@@ -1,6 +1,7 @@
 package com.manu.domoback.teleinfo;
 
-import com.manu.domoback.common.CustLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sound.sampled.*;
 import java.io.File;
@@ -11,14 +12,17 @@ import java.io.IOException;
  * author: www.codejava.net
  */
 public class JavaSoundRecorder {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JavaSoundRecorder.class.getName());
+
     // record duration, in milliseconds
-    long recordTime;
+    private long recordTime;
 
     //File
-    File wavFile;
-    float sampleRate;
-    int sampleSizeInBits;
-    int channels;
+    private File wavFile;
+    private float sampleRate;
+    private int sampleSizeInBits;
+    private int channels;
 
     // format of audio file
     AudioFileFormat.Type fileType = AudioFileFormat.Type.WAVE;
@@ -52,7 +56,7 @@ public class JavaSoundRecorder {
 
             // checks if system supports the data line
             if (!AudioSystem.isLineSupported(info)) {
-                CustLogger.errprintln("Line not supported");
+                LOGGER.error("Line not supported");
                 System.exit(0);
             }
             line = (TargetDataLine) AudioSystem.getLine(info);
@@ -64,10 +68,8 @@ public class JavaSoundRecorder {
             // start recording
             AudioSystem.write(ais, fileType, wavFile);
 
-        } catch (LineUnavailableException ex) {
-            CustLogger.logException(ex);
-        } catch (IOException ioe) {
-            CustLogger.logException(ioe);
+        } catch (LineUnavailableException | IOException ex) {
+            LOGGER.error("An error occured", ex);
         }
     }
 
@@ -94,7 +96,7 @@ public class JavaSoundRecorder {
                 Thread.sleep(self.recordTime);
             } catch (InterruptedException ex) {
                 self.finish();
-                CustLogger.logException(ex);
+                LOGGER.error("An error occured", ex);
                 Thread.currentThread().interrupt();
             }
             self.finish();

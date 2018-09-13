@@ -1,10 +1,11 @@
 package com.manu.domoback.arduinoreader;
 
-import com.manu.domoback.common.CustLogger;
 import gnu.io.CommPortIdentifier;
 import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,6 +17,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ArduinoReader implements SerialPortEventListener, IArduinoReader {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ArduinoReader.class.getName());
 
     private ArduinoInfos infos = new ArduinoInfos();
     private boolean isReady = false;
@@ -70,7 +73,7 @@ public class ArduinoReader implements SerialPortEventListener, IArduinoReader {
             }
         }
         if (portId == null) {
-            CustLogger.errprintln("Could not find COM port.");
+            LOGGER.error("Could not find COM port.");
             return;
         }
 
@@ -94,7 +97,7 @@ public class ArduinoReader implements SerialPortEventListener, IArduinoReader {
             serialPort.notifyOnDataAvailable(true);
             this.isReady = true;
         } catch (Exception e) {
-            CustLogger.logException(e);
+            LOGGER.error("An error occured", e);
         }
     }
 
@@ -106,7 +109,8 @@ public class ArduinoReader implements SerialPortEventListener, IArduinoReader {
             try {
                 String inputLine;
                 while ((inputLine = input.readLine()) != null) {
-                    CustLogger.outprintln(inputLine, "FRA");
+
+                    LOGGER.info("FRA {}", inputLine);
                     String[] info = inputLine.split(" ");
 
                     if (info.length > 1) {
@@ -114,7 +118,7 @@ public class ArduinoReader implements SerialPortEventListener, IArduinoReader {
                     }
                 }
             } catch (Exception e) {
-                CustLogger.logException(e);
+                LOGGER.error("An error occured", e);
             }
         }
     }
@@ -138,17 +142,17 @@ public class ArduinoReader implements SerialPortEventListener, IArduinoReader {
     }
 
     public void writeData(String toSend) {
-        CustLogger.debprintln("writeData IN");
+        LOGGER.debug("writeData IN");
         this.executor.submit(() -> this.sendMessage(toSend));
-        CustLogger.debprintln("writeData OUT");
+        LOGGER.debug("writeData OUT");
     }
 
     private void sendMessage(String toSend) {
-        CustLogger.debprintln("sendMessage IN");
+        LOGGER.debug("sendMessage IN");
         long initTime = System.currentTimeMillis();
         if (toSend != null) {
             try {
-                CustLogger.outprintln(toSend, "TOA");
+                LOGGER.info("TOA {}", toSend);
                 byte[] bytes = toSend.getBytes(Charset.forName("UTF-8"));
                 byte[] preparedMessage = new byte[COMMAND_SIZE];
                 for (int i = 0; i < bytes.length; i++) {
@@ -165,10 +169,10 @@ public class ArduinoReader implements SerialPortEventListener, IArduinoReader {
                     }
                 }
             } catch (IOException | InterruptedException e) {
-                CustLogger.logException(e);
+                LOGGER.error("An error occured", e);
             }
         }
-        CustLogger.debprintln("sendMessage OUT");
+        LOGGER.debug("sendMessage OUT");
     }
 
     /**

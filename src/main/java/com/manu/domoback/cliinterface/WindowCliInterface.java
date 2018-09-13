@@ -11,7 +11,6 @@ import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.manu.domoback.common.Bundles;
-import com.manu.domoback.common.CustLogger;
 import com.manu.domoback.common.NumberUtils;
 import com.manu.domoback.common.StringUtils;
 import com.manu.domoback.features.IChauffage;
@@ -19,6 +18,8 @@ import com.manu.domoback.features.IFeature;
 import com.manu.domoback.features.IFeatureWrapper;
 import com.manu.domoback.features.ReturnKeys;
 import com.manu.domoback.listeners.DataListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.EnumMap;
@@ -27,6 +28,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class WindowCliInterface implements DataListener, WindowListener {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(WindowCliInterface.class.getName());
 
     protected static SimpleTheme theme = null;
 
@@ -76,7 +79,7 @@ public class WindowCliInterface implements DataListener, WindowListener {
             this.window.addWindowListener(this);
 
         } catch (IOException e) {
-            CustLogger.logException(e);
+            LOGGER.error("An error occured", e);
             System.exit(-1);
         }
     }
@@ -302,8 +305,7 @@ public class WindowCliInterface implements DataListener, WindowListener {
             this.changedChauffage();
             this.resizeValueLabels();
         } catch (Exception e) {
-            CustLogger.errprintln("Une erreur s'est produite");
-            CustLogger.logException(e);
+            LOGGER.error("An error occured", e);
         }
     }
 

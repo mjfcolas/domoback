@@ -1,6 +1,7 @@
 package com.manu.domoback.teleinfo;
 
-import com.manu.domoback.common.CustLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WavFile {
+    private static final Logger LOGGER = LoggerFactory.getLogger(WavFile.class.getName());
     private static final int NOT_SPECIFIED = AudioSystem.NOT_SPECIFIED; // -1
 
     private int sampleSize = NOT_SPECIFIED;
@@ -42,7 +44,7 @@ public class WavFile {
 
         data = new byte[(int) dataLength];
         if (ais.read(data) < 0) {
-            CustLogger.errprintln("Aucune données audio à lire");
+            LOGGER.error("Aucune données audio à lire");
             throw new IOException("Aucune données audio à lire");
         }
     }

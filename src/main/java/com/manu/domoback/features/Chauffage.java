@@ -5,15 +5,18 @@ import com.manu.domoback.arduinoreader.IExternalInfos;
 import com.manu.domoback.arduinoreader.INFOS;
 import com.manu.domoback.chauffage.ChauffageInfo;
 import com.manu.domoback.chauffage.IChauffageInfo;
-import com.manu.domoback.common.CustLogger;
 import com.manu.domoback.common.UnsureBoolean;
 import com.manu.domoback.database.IJdbc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Chauffage extends AbstractFeature implements IChauffage {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Chauffage.class.getName());
 
     private IArduinoReader arduinoReader;
     private IChauffageInfo chauffageInfo = new ChauffageInfo();
@@ -28,16 +31,16 @@ public class Chauffage extends AbstractFeature implements IChauffage {
 
     @Override
     public void run() {
-        CustLogger.traprintln("Chauffage.run");
+        LOGGER.trace("Chauffage.run");
         try {
             fillInfos();
             if (arduinoReader.isReady()) {
-                CustLogger.traprintln("Chauffage.run - arduino ready ");
+                LOGGER.trace("Chauffage.run - arduino ready ");
                 //Lecture de l'état du chauffage d'après l'arduino si disponible
                 IExternalInfos arduinoInfos = arduinoReader.getInfos();
                 Boolean arduinChauffageState = arduinoInfos.getChauffageState();
                 if (arduinChauffageState != null) {
-                    CustLogger.debprintln("Synchro OK");
+                    LOGGER.debug("Synchro OK");
                     chauffageInfo.setChauffageState(arduinChauffageState);
                     chauffageInfo.setChauffageStateKnown(true);
                     syncRunning = false;
@@ -45,10 +48,10 @@ public class Chauffage extends AbstractFeature implements IChauffage {
 
                 //Etat du chauffage connu, on peut gérer la commande
                 if (chauffageInfo.getChauffageStateKnown()) {
-                    CustLogger.traprintln("Potentielle commande chauffage");
+                    LOGGER.trace("Potentielle commande chauffage");
                     this.sendCommand();
                 } else if (!chauffageInfo.getChauffageStateKnown() && !syncRunning) {//Etat du chauffage inconnu, on synchronise
-                    CustLogger.debprintln("Demande synchro");
+                    LOGGER.debug("Demande synchro");
                     syncRunning = true;
                     arduinoReader.writeData("CHINFO");
                 }
@@ -56,37 +59,37 @@ public class Chauffage extends AbstractFeature implements IChauffage {
                 loopsSinceLastSync++;
                 //Tous les 1000 tours de boucle, on considère qu'il faut resynchroniser l'état du chauffage
                 if (loopsSinceLastSync > 1000) {
-                    CustLogger.debprintln("Annulation synchro");
+                    LOGGER.debug("Annulation synchro");
                     loopsSinceLastSync = 0;
                     syncRunning = false;
                     chauffageInfo.setChauffageStateKnown(false);
                 }
             }
         } catch (SQLException e) {
-            CustLogger.errprintln("Erreur de récupération des informations de chauffage");
+            LOGGER.error("Erreur de récupération des informations de chauffage", e);
         }
     }
 
     private UnsureBoolean getCommand() {
         //Le chauffage doit être éteint
         if (chauffageInfo.getChauffageState() && !chauffageInfo.getChauffageMode()) {
-            CustLogger.traprintln("Chauffage eteint car mode OFF");
+            LOGGER.trace("Chauffage eteint car mode OFF");
             return new UnsureBoolean(false);
         } else if (chauffageInfo.getChauffageMode() && arduinoReader.getInfos() != null) {//Le chauffage est en mode allumé, il faut voir s'il faut réguler la température
-            CustLogger.traprintln("Recup température appartement");
+            LOGGER.trace("Recup température appartement");
             Float curTemp = arduinoReader.getInfos().getTemperature();
 
             if (curTemp != null) {
-                CustLogger.traprintln("Comparaison température: commande : " + chauffageInfo.getChauffageTemp() + ", current: " + curTemp);
+                LOGGER.trace("Comparaison température: commande : " + chauffageInfo.getChauffageTemp() + ", current: " + curTemp);
                 boolean chauffageToLow = chauffageInfo.getChauffageTemp() >= curTemp;
                 boolean chauffageToHigh = chauffageInfo.getChauffageTemp() < curTemp;
 
                 if (chauffageToLow) {
-                    CustLogger.traprintln("Chauffage a allumer");
+                    LOGGER.trace("Chauffage a allumer");
                     return new UnsureBoolean(true);
                 }
                 if (chauffageToHigh) {
-                    CustLogger.traprintln("Chauffage a eteindre");
+                    LOGGER.trace("Chauffage a eteindre");
                     return new UnsureBoolean(false);
                 }
             }
@@ -95,10 +98,10 @@ public class Chauffage extends AbstractFeature implements IChauffage {
     }
 
     private void sendCommand() {
-        CustLogger.traprintln("Chauffage.sendCommand");
+        LOGGER.trace("Chauffage.sendCommand");
         UnsureBoolean potentialCommand = this.getCommand();
         Boolean chauffageState = chauffageInfo.getChauffageState();
-        CustLogger.traprintln("Send command");
+        LOGGER.trace("Send command");
         if (potentialCommand.isSure() && chauffageState != null && chauffageState != potentialCommand.state()) {
             arduinoReader.writeData("CHAUFF " + (potentialCommand.state() ? "1" : "0"));
             chauffageInfo.setChauffageState(potentialCommand.state());
@@ -125,13 +128,13 @@ public class Chauffage extends AbstractFeature implements IChauffage {
             jdbc.setCurrentTemp(temp);
             fillInfos();
         } catch (SQLException e) {
-            CustLogger.errprintln("Erreur de sauvegarde de la nouvelle température");
+            LOGGER.error("Erreur de sauvegarde de la nouvelle température", e);
         }
 
     }
 
     private void fillInfos() throws SQLException {
-        CustLogger.traprintln("Chauffage.fillInfos");
+        LOGGER.trace("Chauffage.fillInfos");
         Boolean oldMode = chauffageInfo.getChauffageMode();
         Boolean newMode = jdbc.getCommandeChauffage();
         Integer oldTemp = chauffageInfo.getChauffageTemp();
@@ -153,7 +156,7 @@ public class Chauffage extends AbstractFeature implements IChauffage {
         try {
             chauffageInfo.setChauffageMode(jdbc.switchCommandeChauffage());
         } catch (SQLException e) {
-            CustLogger.errprintln("Erreur de sauvegarde du switch chauffage");
+            LOGGER.error("Erreur de sauvegarde du switch chauffage", e);
         }
     }
 

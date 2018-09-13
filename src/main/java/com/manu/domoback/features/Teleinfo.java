@@ -1,10 +1,11 @@
 package com.manu.domoback.features;
 
 import com.manu.domoback.common.Bundles;
-import com.manu.domoback.common.CustLogger;
 import com.manu.domoback.database.IJdbc;
 import com.manu.domoback.teleinfo.ProcessSignal;
 import com.manu.domoback.teleinfo.Trame;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
@@ -13,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 public class Teleinfo extends AbstractFeature {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Teleinfo.class.getName());
 
     ProcessSignal signalProcessor = new ProcessSignal(Bundles.prop().getProperty("teleinfo.filetouse"),
             "1".equals(Bundles.prop().getProperty("teleinfo.processrecord")));
@@ -44,8 +47,7 @@ public class Teleinfo extends AbstractFeature {
             }
             this.fireDataChanged();
         } catch (NumberFormatException | UnsupportedAudioFileException | IOException e) {
-            CustLogger.errprintln("Erreur de lecture des trames teleinfo");
-            CustLogger.logException(e);
+            LOGGER.error("Erreur de lecture des trames teleinfo", e);
         }
 
     }
@@ -68,7 +70,7 @@ public class Teleinfo extends AbstractFeature {
                 jdbc.saveTeleinfos(iInst, hcAmount, hpAmount);
             }
         } catch (Exception e) {
-            CustLogger.errprintln("Erreur de sauvegarde téléinfo");
+            LOGGER.error("Erreur de sauvegarde téléinfo", e);
         }
 
     }

@@ -1,19 +1,22 @@
 package com.manu.domoback.database;
 
 import com.manu.domoback.common.Bundles;
-import com.manu.domoback.common.CustLogger;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
 public class DataSource {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataSource.class.getName());
+
     // JDBC driver name and database URL
     private static final String JDBC_DRIVER = Bundles.prop().getProperty("jdbc.driver");
     private static final String DB_URL = Bundles.prop().getProperty("jdbc.url");
 
-    //  mysql database credentials
+    // database credentials
     private static final String USER_NAME = Bundles.prop().getProperty("jdbc.username");
     private static final String PASSWORD = Bundles.prop().getProperty("jdbc.password");
 
@@ -30,7 +33,7 @@ public class DataSource {
             //Max connection age in order to avoid connection closing from outside causes (firewall, nat...)
             cpds.setMaxConnectionAge(120);
         } catch (PropertyVetoException e) {
-            CustLogger.logException(e);
+            LOGGER.error("An error occured", e);
             System.exit(1);
         }
 

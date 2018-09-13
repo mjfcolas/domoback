@@ -1,17 +1,20 @@
 package com.manu.domoback.database;
 
-import com.manu.domoback.common.CustLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 
 public class Jdbc implements IJdbc {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Jdbc.class.getName());
+
     public Boolean getCommandeChauffage() throws SQLException {
-        CustLogger.traprintln("Jdbc.getCommandeChauffage");
+        LOGGER.trace("Jdbc.getCommandeChauffage");
         try (Connection connection = DataSource.getInstance().getConnection();
              Statement statement = connection.createStatement()) {
 
-            CustLogger.traprintln("Jdbc.getCommandeChauffage - Connection got");
+            LOGGER.trace("Jdbc.getCommandeChauffage - Connection got");
 
             Boolean currentMode = getCommandeChauffageInternal(statement);
             if (currentMode == null) {
@@ -48,7 +51,7 @@ public class Jdbc implements IJdbc {
                 saveHygro(hygro, statement);
             }
         } catch (Exception ex) {
-            CustLogger.logException(ex);
+            LOGGER.error("An error occured", ex);
         }
 
     }
@@ -60,7 +63,7 @@ public class Jdbc implements IJdbc {
             saveEdfIndex(hcAmount, 1, statement);
             saveEdfIndex(hpAmount, 2, statement);
         } catch (Exception ex) {
-            CustLogger.logException(ex);
+            LOGGER.error("An error occured", ex);
         }
 
     }
@@ -72,13 +75,13 @@ public class Jdbc implements IJdbc {
                 preparedStatement.setInt(1, temp);
                 preparedStatement.executeUpdate();
         } catch (Exception ex) {
-            CustLogger.logException(ex);
+            LOGGER.error("An error occured", ex);
         }
 
     }
 
     public Integer getCurrentTemp() throws SQLException {
-        CustLogger.traprintln("Jdbc.getCurrentTemp");
+        LOGGER.trace("Jdbc.getCurrentTemp");
         try (Connection connection = DataSource.getInstance().getConnection();
              Statement statement = connection.createStatement()) {
             Integer result = null;

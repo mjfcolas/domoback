@@ -4,13 +4,16 @@ import com.manu.domoback.arduinoreader.ArduinoReader;
 import com.manu.domoback.arduinoreader.IArduinoReader;
 import com.manu.domoback.cliinterface.WindowCliInterface;
 import com.manu.domoback.common.Bundles;
-import com.manu.domoback.common.CustLogger;
 import com.manu.domoback.common.DependanceFactory;
 import com.manu.domoback.features.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Timer;
 
 class App {
+    private static final Logger LOGGER = LoggerFactory.getLogger(App.class.getName());
+
     private static final IArduinoReader arduinoReader = new ArduinoReader();
     private static final IMeteo meteo = new Meteo(arduinoReader, DependanceFactory.getJdbc(), "METEO");
     private static final IMeteo meteo2 = new Meteo(arduinoReader, DependanceFactory.getJdbc(), "METEO2");
@@ -21,7 +24,7 @@ class App {
 
     public static void main(String[] args) {
 
-        CustLogger.outprintln("Start Program");
+        LOGGER.info("Start Program");
         //Initialisation de la communication série
         arduinoReader.initialize();
 

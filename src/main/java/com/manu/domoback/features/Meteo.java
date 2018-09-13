@@ -3,18 +3,20 @@ package com.manu.domoback.features;
 import com.manu.domoback.arduinoreader.IArduinoReader;
 import com.manu.domoback.arduinoreader.IExternalInfos;
 import com.manu.domoback.arduinoreader.INFOS;
-import com.manu.domoback.common.CustLogger;
 import com.manu.domoback.database.IJdbc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class Meteo extends AbstractFeature implements IMeteo {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Meteo.class.getName());
+
     private IArduinoReader arduinoReader;
     private IExternalInfos meteoInfos;
     private String key;
-
 
     public Meteo(IArduinoReader arduinoReader, IJdbc jdbc, String key) {
         super(jdbc);
@@ -25,9 +27,9 @@ public class Meteo extends AbstractFeature implements IMeteo {
 
     public void run() {
         if (arduinoReader.isReady()) {
-            CustLogger.debprintln("Meteo thread running");
+            LOGGER.debug("Meteo thread running");
             //Information Arduino
-            CustLogger.debprintln("METEO before writeData");
+            LOGGER.debug("METEO before writeData");
             arduinoReader.writeData(key);
             meteoInfos = arduinoReader.getInfos();
             this.fireDataChanged();
@@ -62,7 +64,7 @@ public class Meteo extends AbstractFeature implements IMeteo {
             }
 
         } catch (Exception e) {
-            CustLogger.errprintln("Erreur de sauvegarde météo");
+            LOGGER.error("Erreur de sauvegarde météo", e);
         }
 
     }
