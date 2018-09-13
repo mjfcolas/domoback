@@ -27,6 +27,8 @@ public class DataSource {
             cpds.setJdbcUrl(DB_URL);
             cpds.setUser(USER_NAME);
             cpds.setPassword(PASSWORD);
+            //Max connection age in order to avoid connection closing from outside causes (firewall, nat...)
+            cpds.setMaxConnectionAge(120);
         } catch (PropertyVetoException e) {
             CustLogger.logException(e);
             System.exit(1);

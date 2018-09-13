@@ -11,6 +11,8 @@ public class Jdbc implements IJdbc {
         try (Connection connection = DataSource.getInstance().getConnection();
              Statement statement = connection.createStatement()) {
 
+            CustLogger.traprintln("Jdbc.getCommandeChauffage - Connection got");
+
             Boolean currentMode = getCommandeChauffageInternal(statement);
             if (currentMode == null) {
                 throw new SQLException("Aucune valeur de commande déja présente");
