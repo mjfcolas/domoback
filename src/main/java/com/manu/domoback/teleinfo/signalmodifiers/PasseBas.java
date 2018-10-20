@@ -14,9 +14,9 @@ public class PasseBas {
     public PasseBas(final double g, final double fc, final double fe) {
         this.g = g;
         this.fc = fc;
-        this.wc = Math.tan(Math.PI * fc / fe);
+        this.wc = Math.tan(Math.PI * this.fc / fe);
         this.a = (1 - this.wc) / (1 + this.wc);
-        this.b = (g * this.wc) / (1 + (1 / this.wc));
+        this.b = (this.g * this.wc) / (1 + (1 / this.wc));
     }
 
     public List<Integer> processSignal(final List<Integer> input) {

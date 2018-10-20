@@ -80,7 +80,7 @@ public class Chauffage extends AbstractFeature implements IChauffage {
             final Float curTemp = this.arduinoReader.getInfos().getTemperature();
 
             if (curTemp != null) {
-                LOGGER.trace("Comparaison température: commande : " + this.chauffageInfo.getChauffageTemp() + ", current: " + curTemp);
+                LOGGER.trace("Comparaison température: commande : {}, current: {}", this.chauffageInfo.getChauffageTemp(), curTemp);
                 final boolean chauffageToLow = this.chauffageInfo.getChauffageTemp() >= curTemp;
                 final boolean chauffageToHigh = this.chauffageInfo.getChauffageTemp() < curTemp;
 
@@ -148,7 +148,7 @@ public class Chauffage extends AbstractFeature implements IChauffage {
     }
 
     private boolean detectChange(final Boolean oldMode, final Boolean newMode, final Integer oldTemp, final Integer newTemp) {
-        return !oldTemp.equals(newTemp) || !oldMode.equals(newMode);
+        return oldTemp != null && oldMode != null && (!oldTemp.equals(newTemp) || !oldMode.equals(newMode));
     }
 
     private void switchChauffage() {

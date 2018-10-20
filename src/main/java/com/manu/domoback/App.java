@@ -17,6 +17,7 @@ class App {
     private static final IArduinoReader arduinoReader = new ArduinoReader();
     private static final IMeteo meteo = new Meteo(arduinoReader, DependanceFactory.getJdbc(), "METEO");
     private static final IMeteo meteo2 = new Meteo(arduinoReader, DependanceFactory.getJdbc(), "METEO2");
+    private static final IMeteo meteo3 = new Meteo(arduinoReader, DependanceFactory.getJdbc(), "METEO3");
     private static final IChauffage chauffage = new Chauffage(arduinoReader, DependanceFactory.getJdbc());
     private static final IFeature teleinfo = new Teleinfo(DependanceFactory.getJdbc());
     private static final IFeatureWrapper featureWrapper = new FeatureWrapper(meteo, chauffage, teleinfo);
@@ -35,12 +36,16 @@ class App {
         meteoTimer.schedule(new FeatureRunner(meteo), 0, askTimeMeteo * 1000);
         final Timer meteoTimer2 = new Timer();
         meteoTimer2.schedule(new FeatureRunner(meteo2), 0, askTimeMeteo * 1000);
+        final Timer meteoTimer3 = new Timer();
+        meteoTimer3.schedule(new FeatureRunner(meteo3), 0, askTimeMeteo * 1000);
 
         final long dbSaveTimeMeteo = Integer.parseInt(Bundles.prop().getProperty("meteo.dbsavetime"));
         final Timer meteoSaveTimer = new Timer();
         final Timer meteoSaveTimer2 = new Timer();
+        final Timer meteoSaveTimer3 = new Timer();
         meteoSaveTimer.schedule(new FeatureSaver(meteo), 0, dbSaveTimeMeteo * 1000);
         meteoSaveTimer2.schedule(new FeatureSaver(meteo2), 0, dbSaveTimeMeteo * 1000);
+        meteoSaveTimer3.schedule(new FeatureSaver(meteo3), 0, dbSaveTimeMeteo * 1000);
 
         //Timer pour gérer le chauffage
         final Timer chauffageTimer = new Timer();

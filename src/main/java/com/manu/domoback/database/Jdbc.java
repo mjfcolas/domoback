@@ -1,5 +1,7 @@
 package com.manu.domoback.database;
 
+import com.manu.domoback.common.Bundles;
+import com.manu.domoback.common.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +56,7 @@ public class Jdbc implements IJdbc {
                 this.saveHygro(hygro, statement);
             }
         } catch (final Exception ex) {
-            LOGGER.error("An error occured", ex);
+            LOGGER.error(Bundles.messages().getProperty(Constants.KEY_GENERIC_ERROR), ex);
         }
 
     }
@@ -67,7 +69,7 @@ public class Jdbc implements IJdbc {
             this.saveEdfIndex(hcAmount, 1, statement);
             this.saveEdfIndex(hpAmount, 2, statement);
         } catch (final Exception ex) {
-            LOGGER.error("An error occured", ex);
+            LOGGER.error(Bundles.messages().getProperty(Constants.KEY_GENERIC_ERROR), ex);
         }
 
     }
@@ -80,7 +82,7 @@ public class Jdbc implements IJdbc {
             preparedStatement.setInt(1, temp);
             preparedStatement.executeUpdate();
         } catch (final Exception ex) {
-            LOGGER.error("An error occured", ex);
+            LOGGER.error(Bundles.messages().getProperty(Constants.KEY_GENERIC_ERROR), ex);
         }
 
     }

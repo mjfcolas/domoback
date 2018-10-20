@@ -1,6 +1,9 @@
 package com.manu.domoback.arduinoreader;
 
-import gnu.io.CommPortIdentifier;
+import com.manu.domoback.common.Bundles;
+import com.manu.domoback.common.Constants;
+import com.manu.domoback.exceptions.PortNotFoundException;
+import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
@@ -12,7 +15,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.util.Enumeration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -20,22 +22,12 @@ public class ArduinoReader implements SerialPortEventListener, IArduinoReader {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ArduinoReader.class.getName());
 
-    private ArduinoInfos infos = new ArduinoInfos();
+    private final ArduinoInfos infos = new ArduinoInfos();
     private boolean isReady = false;
 
     private SerialPort serialPort;
-    /**
-     * The port we're normally going to use.
-     */
-    private static final String[] PORT_NAMES = {
-            "/dev/ttyS80",
-            "/dev/ttyS81",
-            "/dev/ttyS82",
-            "/dev/ttyS83",
-            "/dev/ttyACM0",
-            "/dev/ttyACM1",
-            "/dev/ttyACM2"
-    };
+
+    private ICommPortWrapper commPortWrapper = new CommPortWrapper();
 
     /**
      * A BufferedReader which will be fed by a InputStreamReader
@@ -57,119 +49,111 @@ public class ArduinoReader implements SerialPortEventListener, IArduinoReader {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Object sendLock = new Object();
 
+    @Override
     public void initialize() {
-
-        CommPortIdentifier portId = null;
-        Enumeration<?> portEnum = CommPortIdentifier.getPortIdentifiers();
-
-        //First, Find an instance of serial port as set in PORT_NAMES.
-        while (portEnum.hasMoreElements()) {
-            CommPortIdentifier currPortId = (CommPortIdentifier) portEnum.nextElement();
-            for (String portName : PORT_NAMES) {
-                if (currPortId.getName().equals(portName)) {
-                    portId = currPortId;
-                    break;
-                }
-            }
-        }
-        if (portId == null) {
-            LOGGER.error("Could not find COM port.");
-            return;
-        }
 
         try {
             // open serial port, and use class name for the appName.
-            serialPort = (SerialPort) portId.open(this.getClass().getName(),
+            this.serialPort = this.commPortWrapper.openPort(this.getClass().getName(),
                     TIME_OUT);
 
             // set port parameters
-            serialPort.setSerialPortParams(DATA_RATE,
+            this.serialPort.setSerialPortParams(DATA_RATE,
                     SerialPort.DATABITS_8,
                     SerialPort.STOPBITS_1,
                     SerialPort.PARITY_NONE);
 
             // open the streams
-            input = new BufferedReader(new InputStreamReader(serialPort.getInputStream()));
-            output = serialPort.getOutputStream();
+            this.input = new BufferedReader(new InputStreamReader(this.serialPort.getInputStream()));
+            this.output = this.serialPort.getOutputStream();
 
             // add event listeners
-            serialPort.addEventListener(this);
-            serialPort.notifyOnDataAvailable(true);
+            this.serialPort.addEventListener(this);
+            this.serialPort.notifyOnDataAvailable(true);
             this.isReady = true;
-        } catch (Exception e) {
-            LOGGER.error("An error occured", e);
+        } catch (final PortNotFoundException e) {
+            LOGGER.error("Port not found", e);
+        } catch (final PortInUseException e) {
+            LOGGER.error("Port in use", e);
+        } catch (final Exception e) {
+            LOGGER.error(Bundles.messages().getProperty(Constants.KEY_GENERIC_ERROR), e);
         }
     }
 
     /**
      * Handle an event on the serial port. Read the data and print it.
      */
-    public synchronized void serialEvent(SerialPortEvent oEvent) {
+    @Override
+    public synchronized void serialEvent(final SerialPortEvent oEvent) {
         if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
             try {
                 String inputLine;
-                while ((inputLine = input.readLine()) != null) {
+                while ((inputLine = this.input.readLine()) != null) {
 
                     LOGGER.info("FRA {}", inputLine);
-                    String[] info = inputLine.split(" ");
+                    final String[] info = inputLine.split(" ");
 
                     if (info.length > 1) {
                         this.fillInfos(info);
                     }
                 }
-            } catch (Exception e) {
-                LOGGER.error("An error occured", e);
+            } catch (final Exception e) {
+                LOGGER.error(Bundles.messages().getProperty(Constants.KEY_GENERIC_ERROR), e);
             }
         }
     }
 
-    private void fillInfos(String[] info) {
+    private void fillInfos(final String[] info) {
         if (InfoKeys.T.name().equals(info[0])) {
-            infos.setTemperature(Float.parseFloat(info[1]));
+            this.infos.setTemperature(Float.parseFloat(info[1]));
         } else if (InfoKeys.T2.name().equals(info[0])) {
-            infos.setTemperature2(Float.parseFloat(info[1]));
+            this.infos.setTemperature2(Float.parseFloat(info[1]));
+        } else if (InfoKeys.T3.name().equals(info[0])) {
+            this.infos.setTemperature3(Float.parseFloat(info[1]));
         } else if (InfoKeys.AP.name().equals(info[0])) {
-            infos.setPressionAbsolue(Float.parseFloat(info[1]));
+            this.infos.setPressionAbsolue(Float.parseFloat(info[1]));
         } else if (InfoKeys.RP.name().equals(info[0])) {
-            infos.setPressionRelative(Float.parseFloat(info[1]));
+            this.infos.setPressionRelative(Float.parseFloat(info[1]));
         } else if (InfoKeys.HH.name().equals(info[0])) {
-            infos.setHygrometrie(Float.parseFloat(info[1]));
+            this.infos.setHygrometrie(Float.parseFloat(info[1]));
         } else if (InfoKeys.MK.name().equals(info[0])) {
-            infos.setKey(info[1]);
+            this.infos.setKey(info[1]);
         } else if (InfoKeys.D.name().equals(info[0])) {
-            infos.setChauffageState("1".equals(info[1]));
+            this.infos.setChauffageState("1".equals(info[1]));
         }
     }
 
-    public void writeData(String toSend) {
+    @Override
+    public void writeData(final String toSend) {
         LOGGER.debug("writeData IN");
         this.executor.submit(() -> this.sendMessage(toSend));
         LOGGER.debug("writeData OUT");
     }
 
-    private void sendMessage(String toSend) {
+    private void sendMessage(final String toSend) {
         LOGGER.debug("sendMessage IN");
-        long initTime = System.currentTimeMillis();
+        final long initTime = System.currentTimeMillis();
         if (toSend != null) {
             try {
                 LOGGER.info("TOA {}", toSend);
-                byte[] bytes = toSend.getBytes(Charset.forName("UTF-8"));
-                byte[] preparedMessage = new byte[COMMAND_SIZE];
+                final byte[] bytes = toSend.getBytes(Charset.forName("UTF-8"));
+                final byte[] preparedMessage = new byte[COMMAND_SIZE];
                 for (int i = 0; i < bytes.length; i++) {
                     preparedMessage[i] = bytes[i];
                 }
                 for (int i = bytes.length; i < COMMAND_SIZE; i++) {
                     preparedMessage[i] = 0;
                 }
-                output.write(preparedMessage);
-                output.flush();
-                synchronized (sendLock) {
+                this.output.write(preparedMessage);
+                this.output.flush();
+                synchronized (this.sendLock) {
                     while (System.currentTimeMillis() - initTime <= 1000) {
-                        sendLock.wait(1000);
+                        this.sendLock.wait(1000);
                     }
                 }
             } catch (IOException | InterruptedException e) {
-                LOGGER.error("An error occured", e);
+                Thread.currentThread().interrupt();
+                LOGGER.error(Bundles.messages().getProperty(Constants.KEY_GENERIC_ERROR), e);
             }
         }
         LOGGER.debug("sendMessage OUT");
@@ -180,17 +164,27 @@ public class ArduinoReader implements SerialPortEventListener, IArduinoReader {
      * This will prevent port locking on platforms like Linux.
      */
     public synchronized void close() {
-        if (serialPort != null) {
-            serialPort.removeEventListener();
-            serialPort.close();
+        if (this.serialPort != null) {
+            this.serialPort.removeEventListener();
+            this.serialPort.close();
         }
     }
 
+    @Override
     public boolean isReady() {
-        return isReady;
+        return this.isReady;
     }
 
+    @Override
     public ArduinoInfos getInfos() {
-        return infos;
+        return this.infos;
+    }
+
+    public void setCommPortWrapper(final ICommPortWrapper commPortWrapper) {
+        this.commPortWrapper = commPortWrapper;
+    }
+
+    public void setSerialPort(final SerialPort serialPort) {
+        this.serialPort = serialPort;
     }
 }

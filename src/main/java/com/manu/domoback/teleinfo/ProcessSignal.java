@@ -10,7 +10,7 @@ import java.util.List;
 public class ProcessSignal {
 
     private final String filePath;
-    private final float sampleRate = 96000;
+    private static final float SAMPLE_RATE = 96000;
     private final boolean processRecord;
 
     public ProcessSignal(final String filePath, final boolean processRecord) {
@@ -25,7 +25,7 @@ public class ProcessSignal {
         final Reglage reglage = new Reglage(20, -17000, 1000, false);
 
         if (this.processRecord) {
-            final JavaSoundRecorder recorder = new JavaSoundRecorder(this.filePath, this.sampleRate, 16, 1, recordTime);
+            final JavaSoundRecorder recorder = new JavaSoundRecorder(this.filePath, ProcessSignal.SAMPLE_RATE, 16, 1, recordTime);
             recorder.record();
         }
 

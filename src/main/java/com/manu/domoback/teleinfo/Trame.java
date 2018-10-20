@@ -9,9 +9,9 @@ import java.util.Map;
 
 public class Trame {
 
-    private static final boolean doubleStopBit = true;
-    private static final boolean[] LF = AsciiBitUtils.getBitsWithControlsForChar(ControlChars.LF, doubleStopBit);
-    private static final int CHAR_SIZE = doubleStopBit ? 11 : 10; //Taille d'un caractère avec les bits de controle
+    private static final boolean DOUBLE_STOP_BIT = true;
+    private static final boolean[] LF = AsciiBitUtils.getBitsWithControlsForChar(ControlChars.LF, DOUBLE_STOP_BIT);
+    private static final int CHAR_SIZE = DOUBLE_STOP_BIT ? 11 : 10; //Taille d'un caractère avec les bits de controle
 
     private final List<Boolean> signal;
     protected int size;

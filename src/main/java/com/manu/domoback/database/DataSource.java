@@ -1,6 +1,7 @@
 package com.manu.domoback.database;
 
 import com.manu.domoback.common.Bundles;
+import com.manu.domoback.exceptions.BusinessException;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +10,7 @@ import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class DataSource {
+class DataSource {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSource.class.getName());
 
     // JDBC driver name and database URL
@@ -24,22 +25,38 @@ public class DataSource {
     private ComboPooledDataSource cpds;
 
     private DataSource() {
+        this(JDBC_DRIVER, DB_URL, USER_NAME, PASSWORD);
+    }
+
+    private DataSource(final String driver, final String url, final String userName, final String password) {
         try {
-            cpds = new ComboPooledDataSource();
-            cpds.setDriverClass(JDBC_DRIVER); //loads the jdbc driver
-            cpds.setJdbcUrl(DB_URL);
-            cpds.setUser(USER_NAME);
-            cpds.setPassword(PASSWORD);
+            this.cpds = new ComboPooledDataSource();
+            this.cpds.setDriverClass(driver); //loads the jdbc driver
+            this.cpds.setJdbcUrl(url);
+            this.cpds.setUser(userName);
+            this.cpds.setPassword(password);
             //Max connection age in order to avoid connection closing from outside causes (firewall, nat...)
-            cpds.setMaxConnectionAge(120);
-        } catch (PropertyVetoException e) {
+            this.cpds.setMaxConnectionAge(120);
+        } catch (final PropertyVetoException e) {
             LOGGER.error("An error occured", e);
             System.exit(1);
         }
 
     }
 
-    public static DataSource getInstance() {
+    static void initialize(final String driver, final String url, final String userName, final String password) throws BusinessException {
+        if (datasource != null) {
+            throw new BusinessException("Datasource already initialize");
+        } else {
+            datasource = new DataSource(driver, url, userName, password);
+        }
+    }
+
+    static boolean isIinitialized() {
+        return datasource != null;
+    }
+
+    static DataSource getInstance() {
         if (datasource == null) {
             datasource = new DataSource();
             return datasource;
@@ -48,7 +65,7 @@ public class DataSource {
         }
     }
 
-    public Connection getConnection() throws SQLException {
+    Connection getConnection() throws SQLException {
         return this.cpds.getConnection();
     }
 }

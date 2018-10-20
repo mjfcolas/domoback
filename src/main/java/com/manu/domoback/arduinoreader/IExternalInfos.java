@@ -17,6 +17,13 @@ public interface IExternalInfos {
     Float getTemperature2();
 
     /**
+     * Retourne la température extérieure
+     *
+     * @return température
+     */
+    Float getTemperature3();
+
+    /**
      * Retourne la pression absolue
      *
      * @return pression absolue

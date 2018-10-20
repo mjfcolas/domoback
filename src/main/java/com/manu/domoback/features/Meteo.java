@@ -51,11 +51,19 @@ public class Meteo extends AbstractFeature implements IMeteo {
     public void save() {
         try {
             if (this.meteoInfos != null) {
-                int type = 1;
-                Float temperature = this.meteoInfos.getTemperature();
+                int type = 0;
+                Float temperature = null;
+                if ("METEO".equals(this.key)) {
+                    type = 1;
+                    temperature = this.meteoInfos.getTemperature();
+                }
                 if ("METEO2".equals(this.key)) {
                     type = 2;
                     temperature = this.meteoInfos.getTemperature2();
+                }
+                if ("METEO3".equals(this.key)) {
+                    type = 3;
+                    temperature = this.meteoInfos.getTemperature3();
                 }
                 this.jdbc.saveMeteoInfos(temperature,
                         this.meteoInfos.getPressionRelative(),

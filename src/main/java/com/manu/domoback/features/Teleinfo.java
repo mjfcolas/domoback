@@ -17,29 +17,29 @@ public class Teleinfo extends AbstractFeature {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Teleinfo.class.getName());
 
-    ProcessSignal signalProcessor = new ProcessSignal(Bundles.prop().getProperty("teleinfo.filetouse"),
+    private final ProcessSignal signalProcessor = new ProcessSignal(Bundles.prop().getProperty("teleinfo.filetouse"),
             "1".equals(Bundles.prop().getProperty("teleinfo.processrecord")));
-    Map<String, String> trameInfos = new HashMap<>();
+    private Map<String, String> trameInfos = new HashMap<>();
 
-    public Teleinfo(IJdbc jdbc) {
+    public Teleinfo(final IJdbc jdbc) {
         super(jdbc);
     }
 
     @Override
     public void run() {
         try {
-            List<Trame> trames;
-            trames = signalProcessor.getTrames(Integer.parseInt(Bundles.prop().getProperty("teleinfo.trametime")));
+            final List<Trame> trames;
+            trames = this.signalProcessor.getTrames(Integer.parseInt(Bundles.prop().getProperty("teleinfo.trametime")));
 
             if (!trames.isEmpty()) {
                 int i = 0;
                 boolean inError = true;
                 while (inError && i < trames.size()) {
-                    Trame curTrame = trames.get(i);
+                    final Trame curTrame = trames.get(i);
                     if (!curTrame.isInError()) {
                         curTrame.parseInfos();
                         curTrame.formatInfos();
-                        trameInfos = curTrame.getFormatedInfos();
+                        this.trameInfos = curTrame.getFormatedInfos();
                         inError = false;
                     }
                     i++;
@@ -54,22 +54,22 @@ public class Teleinfo extends AbstractFeature {
 
     @Override
     public Map<String, String> getInfos() {
-        return trameInfos;
+        return this.trameInfos;
     }
 
     @Override
     public void save() {
         try {
-            String iInstStr = trameInfos.get("IINST");
-            String hcAmountStr = trameInfos.get("HCHC");
-            String hpAmountStr = trameInfos.get("HCHP");
+            final String iInstStr = this.trameInfos.get("IINST");
+            final String hcAmountStr = this.trameInfos.get("HCHC");
+            final String hpAmountStr = this.trameInfos.get("HCHP");
             if (iInstStr != null && hcAmountStr != null && hpAmountStr != null) {
-                Integer iInst = Integer.parseInt(iInstStr);
-                Integer hcAmount = Integer.parseInt(hcAmountStr);
-                Integer hpAmount = Integer.parseInt(hpAmountStr);
-                jdbc.saveTeleinfos(iInst, hcAmount, hpAmount);
+                final Integer iInst = Integer.parseInt(iInstStr);
+                final Integer hcAmount = Integer.parseInt(hcAmountStr);
+                final Integer hpAmount = Integer.parseInt(hpAmountStr);
+                this.jdbc.saveTeleinfos(iInst, hcAmount, hpAmount);
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error("Erreur de sauvegarde téléinfo", e);
         }
 

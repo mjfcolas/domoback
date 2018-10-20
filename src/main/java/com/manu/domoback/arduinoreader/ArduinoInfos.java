@@ -2,69 +2,86 @@ package com.manu.domoback.arduinoreader;
 
 public class ArduinoInfos implements IExternalInfos {
 
-    protected String key;
-    protected Float temperature;
-    protected Float temperature2;
-    protected Float pressionAbsolue;
-    protected Float pressionRelative;
-    protected Float hygrometrie;
-    protected Boolean chauffageState;
+    private String key;
+    private Float temperature;
+    private Float temperature2;
+    private Float temperature3;
+    private Float pressionAbsolue;
+    private Float pressionRelative;
+    private Float hygrometrie;
+    private Boolean chauffageState;
 
+    @Override
     public Float getTemperature() {
-        return temperature;
+        return this.temperature;
     }
 
-    public void setTemperature(Float temperature) {
+    public void setTemperature(final Float temperature) {
         this.temperature = temperature;
     }
 
+    @Override
     public Float getTemperature2() {
-        return temperature2;
+        return this.temperature2;
     }
 
-    public void setTemperature2(Float temperature) {
+    public void setTemperature2(final Float temperature) {
         this.temperature2 = temperature;
     }
 
-    public Float getPressionAbsolue() {
-        return pressionAbsolue;
+    @Override
+    public Float getTemperature3() {
+        return this.temperature3;
     }
 
-    public void setPressionAbsolue(Float pressionAbsolue) {
+    void setTemperature3(final Float temperature) {
+        this.temperature3 = temperature;
+    }
+
+    @Override
+    public Float getPressionAbsolue() {
+        return this.pressionAbsolue;
+    }
+
+    void setPressionAbsolue(final Float pressionAbsolue) {
         this.pressionAbsolue = pressionAbsolue;
     }
 
+    @Override
     public Float getPressionRelative() {
-        return pressionRelative;
+        return this.pressionRelative;
     }
 
-    public void setPressionRelative(Float pressionRelative) {
+    void setPressionRelative(final Float pressionRelative) {
         this.pressionRelative = pressionRelative;
     }
 
+    @Override
     public Float getHygrometrie() {
-        return hygrometrie;
+        return this.hygrometrie;
     }
 
-    public void setHygrometrie(Float hygrometrie) {
+    public void setHygrometrie(final Float hygrometrie) {
         this.hygrometrie = hygrometrie;
     }
 
+    @Override
     public String getKey() {
-        return key;
+        return this.key;
     }
 
-    public void setKey(String key) {
+    void setKey(final String key) {
         this.key = key;
     }
 
+    @Override
     public Boolean getChauffageState() {
-        Boolean result = chauffageState;
+        final Boolean result = this.chauffageState;
         this.chauffageState = null;
         return result;
     }
 
-    public void setChauffageState(Boolean chauffageState) {
+    public void setChauffageState(final Boolean chauffageState) {
         this.chauffageState = chauffageState;
     }
 }
