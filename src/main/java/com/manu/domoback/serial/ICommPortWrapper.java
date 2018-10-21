@@ -1,4 +1,4 @@
-package com.manu.domoback.arduinoreader;
+package com.manu.domoback.serial;
 
 import com.manu.domoback.exceptions.PortNotFoundException;
 import gnu.io.PortInUseException;

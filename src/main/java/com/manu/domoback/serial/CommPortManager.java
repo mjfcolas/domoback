@@ -1,4 +1,4 @@
-package com.manu.domoback.arduinoreader;
+package com.manu.domoback.serial;
 
 import com.manu.domoback.exceptions.PortNotFoundException;
 import gnu.io.CommPortIdentifier;
@@ -7,7 +7,7 @@ import gnu.io.SerialPort;
 
 import java.util.Enumeration;
 
-class CommPortWrapper implements ICommPortWrapper {
+public class CommPortManager implements ICommPortWrapper {
 
     /**
      * The port we're normally going to use.
@@ -22,28 +22,22 @@ class CommPortWrapper implements ICommPortWrapper {
             "/dev/ttyACM2"
     };
 
-    CommPortWrapper() {
-
-    }
-
     @Override
     public SerialPort openPort(final String className, final Integer timeOut) throws PortNotFoundException, PortInUseException {
-        CommPortIdentifier portId = null;
-        final Enumeration<?> portEnum = CommPortIdentifier.getPortIdentifiers();
 
+        final Enumeration<?> portEnum = CommPortIdentifier.getPortIdentifiers();
+        final CommPortIdentifier portId;
         //First, Find an instance of serial port as set in PORT_NAMES.
         while (portEnum.hasMoreElements()) {
             final CommPortIdentifier currPortId = (CommPortIdentifier) portEnum.nextElement();
             for (final String portName : PORT_NAMES) {
                 if (currPortId.getName().equals(portName)) {
                     portId = currPortId;
-                    break;
+                    return (SerialPort) portId.open(className, timeOut);
                 }
             }
         }
-        if (portId == null) {
-            throw new PortNotFoundException();
-        }
-        return (SerialPort) portId.open(className, timeOut);
+        throw new PortNotFoundException();
     }
+
 }

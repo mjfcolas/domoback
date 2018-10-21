@@ -1,5 +1,6 @@
 package com.manu.domoback.arduinoreader;
 
+import com.manu.domoback.mocks.InputStreamMock;
 import com.manu.domoback.mocks.OutputStreamMock;
 import gnu.io.SerialPort;
 import gnu.io.SerialPortEventListener;
@@ -12,9 +13,23 @@ import java.io.OutputStream;
 import java.util.TooManyListenersException;
 
 public class SerialPortMock extends SerialPort {
+
+    private final boolean streamsError;
+    private boolean serialPortParamsError = false;
+
+    SerialPortMock() {
+        this.streamsError = false;
+    }
+
+    SerialPortMock(final boolean streamsError) {
+        this.streamsError = streamsError;
+    }
+
     @Override
     public void setSerialPortParams(final int i, final int i1, final int i2, final int i3) throws UnsupportedCommOperationException {
-
+        if (this.serialPortParamsError) {
+            throw new UnsupportedCommOperationException();
+        }
     }
 
     @Override
@@ -304,6 +319,9 @@ public class SerialPortMock extends SerialPort {
 
     @Override
     public InputStream getInputStream() throws IOException {
+        if (this.streamsError) {
+            return new InputStreamMock(true);
+        }
         final StringBuilder sb = new StringBuilder();
         final String systemPropertyLineSeparator = "line.separator";
         sb.append("T 15");
@@ -329,6 +347,10 @@ public class SerialPortMock extends SerialPort {
 
     @Override
     public OutputStream getOutputStream() throws IOException {
-        return new OutputStreamMock();
+        return new OutputStreamMock(this.streamsError);
+    }
+
+    void setSerialPortParamsError(final boolean serialPortParamsError) {
+        this.serialPortParamsError = serialPortParamsError;
     }
 }

@@ -22,9 +22,9 @@ public class ChauffageTest extends TestCase {
 
     private Chauffage chauffage = null;
     @Mock
-    private IArduinoReader arduinoReader = null;
+    private final IArduinoReader arduinoReader = null;
     @Mock
-    private IJdbc jdbc = null;
+    private final IJdbc jdbc = null;
 
     @BeforeClass
     public static void beforeClass() {
@@ -33,7 +33,7 @@ public class ChauffageTest extends TestCase {
 
     @Before
     public void before() {
-        chauffage = new Chauffage(arduinoReader, jdbc);
+        this.chauffage = new Chauffage(this.arduinoReader, this.jdbc);
     }
 
     /**
@@ -41,7 +41,7 @@ public class ChauffageTest extends TestCase {
      */
     @Test
     public void testFormatInfos1() {
-        Map<String, String> result = chauffage.getInfos();
+        final Map<String, String> result = this.chauffage.getInfos();
         assertEquals(2, result.size());
         assertEquals("N/A", result.get(INFOS.MODECHAUFF.name()));
         assertEquals("N/A", result.get(INFOS.TEMPCHAUFF.name()));
@@ -52,15 +52,15 @@ public class ChauffageTest extends TestCase {
      */
     @Test
     public void testRun1() throws SQLException {
-        Mockito.when(jdbc.getCommandeChauffage()).thenReturn(true);
-        Mockito.when(jdbc.getCurrentTemp()).thenReturn(20);
-        Mockito.when(arduinoReader.isReady()).thenReturn(true);
-        ArduinoInfos arduinoResult = new ArduinoInfos();
+        Mockito.when(this.jdbc.getCommandeChauffage()).thenReturn(true);
+        Mockito.when(this.jdbc.getCurrentTemp()).thenReturn(20);
+        Mockito.when(this.arduinoReader.isReady()).thenReturn(true);
+        final ArduinoInfos arduinoResult = new ArduinoInfos();
         arduinoResult.setChauffageState(false);
         arduinoResult.setTemperature(new Float(18));
-        Mockito.when(arduinoReader.getInfos()).thenReturn(arduinoResult);
-        chauffage.run();
-        IChauffageInfo result = chauffage.getChauffageInfo();
+        Mockito.when(this.arduinoReader.getInfos()).thenReturn(arduinoResult);
+        this.chauffage.run();
+        final IChauffageInfo result = this.chauffage.getChauffageInfo();
         assertEquals(new Boolean(true), result.getChauffageState());
     }
 
@@ -69,15 +69,15 @@ public class ChauffageTest extends TestCase {
      */
     @Test
     public void testRun2() throws SQLException {
-        Mockito.when(jdbc.getCommandeChauffage()).thenReturn(true);
-        Mockito.when(jdbc.getCurrentTemp()).thenReturn(20);
-        Mockito.when(arduinoReader.isReady()).thenReturn(true);
-        ArduinoInfos arduinoResult = new ArduinoInfos();
+        Mockito.when(this.jdbc.getCommandeChauffage()).thenReturn(true);
+        Mockito.when(this.jdbc.getCurrentTemp()).thenReturn(20);
+        Mockito.when(this.arduinoReader.isReady()).thenReturn(true);
+        final ArduinoInfos arduinoResult = new ArduinoInfos();
         arduinoResult.setChauffageState(false);
         arduinoResult.setTemperature(new Float(21));
-        Mockito.when(arduinoReader.getInfos()).thenReturn(arduinoResult);
-        chauffage.run();
-        IChauffageInfo result = chauffage.getChauffageInfo();
+        Mockito.when(this.arduinoReader.getInfos()).thenReturn(arduinoResult);
+        this.chauffage.run();
+        final IChauffageInfo result = this.chauffage.getChauffageInfo();
         assertEquals(new Boolean(false), result.getChauffageState());
     }
 
@@ -86,15 +86,15 @@ public class ChauffageTest extends TestCase {
      */
     @Test
     public void testRun3() throws SQLException {
-        Mockito.when(jdbc.getCommandeChauffage()).thenReturn(true);
-        Mockito.when(jdbc.getCurrentTemp()).thenReturn(20);
-        Mockito.when(arduinoReader.isReady()).thenReturn(true);
-        ArduinoInfos arduinoResult = new ArduinoInfos();
+        Mockito.when(this.jdbc.getCommandeChauffage()).thenReturn(true);
+        Mockito.when(this.jdbc.getCurrentTemp()).thenReturn(20);
+        Mockito.when(this.arduinoReader.isReady()).thenReturn(true);
+        final ArduinoInfos arduinoResult = new ArduinoInfos();
         arduinoResult.setChauffageState(true);
         arduinoResult.setTemperature(new Float(19));
-        Mockito.when(arduinoReader.getInfos()).thenReturn(arduinoResult);
-        chauffage.run();
-        IChauffageInfo result = chauffage.getChauffageInfo();
+        Mockito.when(this.arduinoReader.getInfos()).thenReturn(arduinoResult);
+        this.chauffage.run();
+        final IChauffageInfo result = this.chauffage.getChauffageInfo();
         assertEquals(new Boolean(true), result.getChauffageState());
     }
 
@@ -103,15 +103,41 @@ public class ChauffageTest extends TestCase {
      */
     @Test
     public void testRun4() throws SQLException {
-        Mockito.when(jdbc.getCommandeChauffage()).thenReturn(true);
-        Mockito.when(jdbc.getCurrentTemp()).thenReturn(20);
-        Mockito.when(arduinoReader.isReady()).thenReturn(true);
-        ArduinoInfos arduinoResult = new ArduinoInfos();
+        Mockito.when(this.jdbc.getCommandeChauffage()).thenReturn(true);
+        Mockito.when(this.jdbc.getCurrentTemp()).thenReturn(20);
+        Mockito.when(this.arduinoReader.isReady()).thenReturn(true);
+        final ArduinoInfos arduinoResult = new ArduinoInfos();
         arduinoResult.setChauffageState(true);
         arduinoResult.setTemperature(new Float(21));
-        Mockito.when(arduinoReader.getInfos()).thenReturn(arduinoResult);
-        chauffage.run();
-        IChauffageInfo result = chauffage.getChauffageInfo();
+        Mockito.when(this.arduinoReader.getInfos()).thenReturn(arduinoResult);
+        this.chauffage.run();
+        final IChauffageInfo result = this.chauffage.getChauffageInfo();
         assertEquals(new Boolean(false), result.getChauffageState());
+    }
+
+    /**
+     * Chauffage off ne doit pas s'allumer
+     */
+    @Test
+    public void testRun5() throws SQLException {
+        Mockito.when(this.jdbc.getCommandeChauffage()).thenReturn(false);
+        Mockito.when(this.jdbc.getCurrentTemp()).thenReturn(20);
+        Mockito.when(this.arduinoReader.isReady()).thenReturn(true);
+        final ArduinoInfos arduinoResult = new ArduinoInfos();
+        arduinoResult.setChauffageState(false);
+        arduinoResult.setTemperature(new Float(18));
+        Mockito.when(this.arduinoReader.getInfos()).thenReturn(arduinoResult);
+        this.chauffage.run();
+        final IChauffageInfo result = this.chauffage.getChauffageInfo();
+        assertEquals(new Boolean(false), result.getChauffageState());
+    }
+
+    @Test
+    public void testChangeTemperature() throws SQLException {
+        Mockito.when(this.jdbc.getCommandeChauffage()).thenReturn(true);
+        Mockito.when(this.jdbc.getCurrentTemp()).thenReturn(20);
+        Mockito.when(this.arduinoReader.isReady()).thenReturn(true);
+        this.chauffage.changeTemperature(true);
+        this.chauffage.changeTemperature(false);
     }
 }

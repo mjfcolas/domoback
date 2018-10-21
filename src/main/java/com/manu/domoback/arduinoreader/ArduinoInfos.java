@@ -34,7 +34,7 @@ public class ArduinoInfos implements IExternalInfos {
         return this.temperature3;
     }
 
-    void setTemperature3(final Float temperature) {
+    public void setTemperature3(final Float temperature) {
         this.temperature3 = temperature;
     }
 
@@ -43,7 +43,7 @@ public class ArduinoInfos implements IExternalInfos {
         return this.pressionAbsolue;
     }
 
-    void setPressionAbsolue(final Float pressionAbsolue) {
+    public void setPressionAbsolue(final Float pressionAbsolue) {
         this.pressionAbsolue = pressionAbsolue;
     }
 
@@ -52,7 +52,7 @@ public class ArduinoInfos implements IExternalInfos {
         return this.pressionRelative;
     }
 
-    void setPressionRelative(final Float pressionRelative) {
+    public void setPressionRelative(final Float pressionRelative) {
         this.pressionRelative = pressionRelative;
     }
 
@@ -70,7 +70,7 @@ public class ArduinoInfos implements IExternalInfos {
         return this.key;
     }
 
-    void setKey(final String key) {
+    public void setKey(final String key) {
         this.key = key;
     }
 

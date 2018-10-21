@@ -3,6 +3,8 @@ package com.manu.domoback.arduinoreader;
 import com.manu.domoback.common.Bundles;
 import com.manu.domoback.common.Constants;
 import com.manu.domoback.exceptions.PortNotFoundException;
+import com.manu.domoback.serial.CommPortManager;
+import com.manu.domoback.serial.ICommPortWrapper;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent;
@@ -27,7 +29,7 @@ public class ArduinoReader implements SerialPortEventListener, IArduinoReader {
 
     private SerialPort serialPort;
 
-    private ICommPortWrapper commPortWrapper = new CommPortWrapper();
+    private ICommPortWrapper commPortWrapper = new CommPortManager();
 
     /**
      * A BufferedReader which will be fed by a InputStreamReader

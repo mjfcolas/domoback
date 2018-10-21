@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class WindowCliInterface implements DataListener, WindowListener {
+public class WindowCliInterface implements DataListener, WindowListener, IUserInterface {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WindowCliInterface.class.getName());
 
@@ -41,6 +41,7 @@ public class WindowCliInterface implements DataListener, WindowListener {
     private Window window = null;
     private Panel contentPanel = null;
     protected IChauffage chauffage = null;
+    private boolean displayed = false;
 
     private static final int COLUMN_SIZE = 10;
     private static final double TMAX = 40;
@@ -79,6 +80,7 @@ public class WindowCliInterface implements DataListener, WindowListener {
 
         } catch (final IOException e) {
             LOGGER.error("An error occured", e);
+            System.exit(-1);
             System.exit(-1);
         }
     }
@@ -358,8 +360,10 @@ public class WindowCliInterface implements DataListener, WindowListener {
         }
     }
 
+    @Override
     public void displayInterface() {
         this.createTeleinfoPanel();
+        this.displayed = true;
         this.textGUI.addWindowAndWait(this.window);
     }
 
@@ -423,5 +427,9 @@ public class WindowCliInterface implements DataListener, WindowListener {
     @Override
     public void onMoved(final Window window, final TerminalPosition oldPosition, final TerminalPosition newPosition) {
         //Pas d'actions sur cet évènement
+    }
+
+    public boolean isDisplayed() {
+        return this.displayed;
     }
 }

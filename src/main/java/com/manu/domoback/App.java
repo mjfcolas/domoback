@@ -2,6 +2,7 @@ package com.manu.domoback;
 
 import com.manu.domoback.arduinoreader.ArduinoReader;
 import com.manu.domoback.arduinoreader.IArduinoReader;
+import com.manu.domoback.cliinterface.IUserInterface;
 import com.manu.domoback.cliinterface.WindowCliInterface;
 import com.manu.domoback.common.Bundles;
 import com.manu.domoback.common.DependanceFactory;
@@ -21,9 +22,14 @@ class App {
     private static final IChauffage chauffage = new Chauffage(arduinoReader, DependanceFactory.getJdbc());
     private static final IFeature teleinfo = new Teleinfo(DependanceFactory.getJdbc());
     private static final IFeatureWrapper featureWrapper = new FeatureWrapper(meteo, chauffage, teleinfo);
-    private static final WindowCliInterface cliInterface = new WindowCliInterface(featureWrapper, chauffage);
 
-    public static void main(final String[] args) {
+    private static final IUserInterface cliInterface = new WindowCliInterface(featureWrapper, chauffage);
+
+    App() {
+        //Hide public constructor
+    }
+
+    public static void main() {
 
         LOGGER.info("Start Program");
         //Initialisation de la communication série
@@ -63,6 +69,9 @@ class App {
 
         //Initialisation de l'interface
         cliInterface.displayInterface();
-        System.exit(0);
+    }
+
+    static IUserInterface getCliInterface() {
+        return cliInterface;
     }
 }
