@@ -2,8 +2,8 @@ package com.manu.domoback.features;
 
 import com.manu.domoback.arduinoreader.ArduinoInfos;
 import com.manu.domoback.arduinoreader.IArduinoReader;
-import com.manu.domoback.arduinoreader.INFOS;
 import com.manu.domoback.database.IJdbc;
+import com.manu.domoback.enums.INFOS;
 import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.BeforeClass;

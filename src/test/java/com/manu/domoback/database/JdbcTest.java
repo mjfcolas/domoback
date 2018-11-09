@@ -14,6 +14,9 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Scanner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -108,9 +111,10 @@ public class JdbcTest extends TestCase {
     @Test
     public void testSetCurrentTemp() {
         try {
+            this.initializeData("tempChauff.sql");
             this.jdbc.setCurrentTemp(22);
             this.jdbc.setCurrentTemp(24);
-            assertEquals((Integer) 24, this.jdbc.getCurrentTemp());
+            assertEquals((Integer) 24, this.jdbc.getCurrentTemp(false));
         } catch (final SQLException e) {
             fail();
         }
@@ -120,10 +124,80 @@ public class JdbcTest extends TestCase {
     public void testGetCurrentTempNoValues() {
         boolean error = true;
         try {
-            this.jdbc.getCurrentTemp();
+            this.jdbc.getCurrentTemp(false);
         } catch (final SQLException e) {
             error = false;
         }
         assertFalse(error);
+    }
+
+    @Test
+    public void testGetTempNoValues() {
+        boolean error = true;
+        try {
+            this.jdbc.getTemp(new Date());
+        } catch (final SQLException e) {
+            error = false;
+        }
+        assertFalse(error);
+    }
+
+    @Test
+    public void testGetTemp() throws ParseException, SQLException {
+        this.initializeData("tempChauff.sql");
+        final SimpleDateFormat sdf = new SimpleDateFormat("HHmmss");
+        final Date date = sdf.parse("221015");
+        assertEquals((Integer) 34, this.jdbc.getTemp(date));
+    }
+
+    @Test
+    public void testGetTempBeforeMidnight() throws ParseException, SQLException {
+        this.initializeData("tempChauff.sql");
+        final SimpleDateFormat sdf = new SimpleDateFormat("HHmmss");
+        final Date date = sdf.parse("231015");
+        assertEquals((Integer) 35, this.jdbc.getTemp(date));
+    }
+
+    @Test
+    public void testGetTempForStartHour() throws ParseException, SQLException {
+        this.initializeData("tempChauff.sql");
+        final SimpleDateFormat sdf = new SimpleDateFormat("HHmmss");
+        final Date date = sdf.parse("230000");
+        assertEquals((Integer) 35, this.jdbc.getTempForStartHour(date));
+    }
+
+    @Test
+    public void testGetTempMap() throws SQLException {
+        this.initializeData("tempChauff.sql");
+        this.jdbc.getTempMap();
+    }
+
+    @Test
+    public void testGetHourModeChauffage() throws SQLException {
+        this.initializeData("modeChauff.sql");
+        assertEquals((Boolean) true, this.jdbc.getHourModeChauffage());
+    }
+
+    @Test
+    public void testGetHourModeChauffageNoValues() {
+        boolean error = true;
+        try {
+            this.jdbc.getHourModeChauffage();
+        } catch (final SQLException e) {
+            error = false;
+        }
+        assertFalse(error);
+    }
+
+    @Test
+    public void testSetTemp() {
+        this.jdbc.setTemp(25, new Date());
+    }
+
+    @Test
+    public void testSwitchHourModeChauffage() throws SQLException {
+        this.initializeData("modeChauff.sql");
+        this.jdbc.switchHourModeChauffage();
+        assertEquals((Boolean) false, this.jdbc.getHourModeChauffage());
     }
 }

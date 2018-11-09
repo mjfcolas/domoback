@@ -2,6 +2,7 @@ package com.manu.domoback.arduinoreader;
 
 import com.manu.domoback.common.Bundles;
 import com.manu.domoback.common.Constants;
+import com.manu.domoback.enums.InfoKeys;
 import com.manu.domoback.exceptions.PortNotFoundException;
 import com.manu.domoback.serial.CommPortManager;
 import com.manu.domoback.serial.ICommPortWrapper;

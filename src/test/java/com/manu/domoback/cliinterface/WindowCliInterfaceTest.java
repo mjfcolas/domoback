@@ -62,6 +62,12 @@ public class WindowCliInterfaceTest extends TestCase {
         this.gui.onInput(null, new KeyStroke(KeyType.F2), null);
         this.gui.onInput(null, new KeyStroke(KeyType.F1), null);
         this.gui.onInput(null, new KeyStroke(KeyType.F3), null);
+        this.gui.onInput(null, new KeyStroke(KeyType.F8), null);
+        this.gui.onInput(null, new KeyStroke(KeyType.ArrowUp), null);
+        this.gui.onInput(null, new KeyStroke(KeyType.ArrowDown), null);
+        for (int i = 0; i < 30; i++) {
+            this.gui.onInput(null, new KeyStroke(KeyType.Tab), null);
+        }
         this.gui.onInput(null, new KeyStroke(KeyType.ArrowUp), null);
         this.gui.onInput(null, new KeyStroke(KeyType.ArrowDown), null);
     }

@@ -1,56 +1,92 @@
 package com.manu.domoback.chauffage;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 public class ChauffageInfo implements IChauffageInfo {
 
     private Boolean hasChangedModeAttr = false;
     private Boolean chauffageState = false;
     private Boolean chauffageStateKnown = false;
     private Boolean chauffageModeAttr;
+    private Boolean chauffaHourgeModeAttr;
     private Integer chauffageTempAttr;
 
+    private Map<Date, Integer> tempByHoursMap = new HashMap<>();
+
+    @Override
     public Boolean getChauffageMode() {
-        return chauffageModeAttr;
+        return this.chauffageModeAttr;
     }
 
-    public void setChauffageMode(Boolean chauffageMode) {
-        if (chauffageModeAttr != chauffageMode) {
-            hasChangedModeAttr = true;
+    @Override
+    public Boolean getChauffageHourMode() {
+        return this.chauffaHourgeModeAttr;
+    }
+
+    @Override
+    public void setChauffageMode(final Boolean chauffageMode) {
+        if (this.chauffageModeAttr != chauffageMode) {
+            this.hasChangedModeAttr = true;
         }
-        chauffageModeAttr = chauffageMode;
+        this.chauffageModeAttr = chauffageMode;
     }
 
+    @Override
+    public void setChauffageHourMode(final Boolean chauffageHourMode) {
+        this.chauffaHourgeModeAttr = chauffageHourMode;
+    }
+
+    @Override
     public Integer getChauffageTemp() {
-        return chauffageTempAttr;
+        return this.chauffageTempAttr;
     }
 
-    public void setChauffageTemp(Integer chauffageTemp) {
-        if (chauffageTempAttr == null || !chauffageTempAttr.equals(chauffageTemp)) {
-            chauffageTempAttr = chauffageTemp;
+    @Override
+    public void setChauffageTemp(final Integer chauffageTemp) {
+        if (this.chauffageTempAttr == null || !this.chauffageTempAttr.equals(chauffageTemp)) {
+            this.chauffageTempAttr = chauffageTemp;
         }
-        chauffageTempAttr = chauffageTemp;
+        this.chauffageTempAttr = chauffageTemp;
     }
 
+    @Override
     public Boolean hasChangedMode() {
-        if (hasChangedModeAttr) {
-            hasChangedModeAttr = false;
+        if (this.hasChangedModeAttr) {
+            this.hasChangedModeAttr = false;
             return true;
         }
         return false;
     }
 
+    @Override
     public Boolean getChauffageState() {
-        return chauffageState;
+        return this.chauffageState;
     }
 
-    public void setChauffageState(Boolean chauffageState) {
+    @Override
+    public void setChauffageState(final Boolean chauffageState) {
         this.chauffageState = chauffageState;
     }
 
+    @Override
     public Boolean getChauffageStateKnown() {
-        return chauffageStateKnown;
+        return this.chauffageStateKnown;
     }
 
-    public void setChauffageStateKnown(Boolean chauffageStateKnown) {
+    @Override
+    public void setChauffageStateKnown(final Boolean chauffageStateKnown) {
         this.chauffageStateKnown = chauffageStateKnown;
+    }
+
+    @Override
+    public Map<Date, Integer> getTempByHoursMap() {
+        return this.tempByHoursMap;
+    }
+
+    @Override
+    public void setTempByHoursMap(final Map<Date, Integer> tempByHoursMap) {
+        this.tempByHoursMap = tempByHoursMap;
     }
 }

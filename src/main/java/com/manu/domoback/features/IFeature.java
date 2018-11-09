@@ -19,8 +19,10 @@ public interface IFeature {
 
     /**
      * Sauvegarde des informations gérées par la fonctionnalité
+     *
+     * @return true if save succeeded
      */
-    void save();
+    boolean save();
 
     /**
      * Renvoie le nom de la feature

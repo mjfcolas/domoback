@@ -2,15 +2,19 @@ package com.manu.domoback.features;
 
 import com.manu.domoback.arduinoreader.IArduinoReader;
 import com.manu.domoback.arduinoreader.IExternalInfos;
-import com.manu.domoback.arduinoreader.INFOS;
 import com.manu.domoback.chauffage.ChauffageInfo;
 import com.manu.domoback.chauffage.IChauffageInfo;
 import com.manu.domoback.common.UnsureBoolean;
 import com.manu.domoback.database.IJdbc;
+import com.manu.domoback.enums.INFOS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,19 +80,20 @@ public class Chauffage extends AbstractFeature implements IChauffage {
             LOGGER.trace("Chauffage eteint car mode OFF");
             return new UnsureBoolean(false);
         } else if (this.chauffageInfo.getChauffageMode() && this.arduinoReader.getInfos() != null) {//Le chauffage est en mode allumé, il faut voir s'il faut réguler la température
+
+            final Integer tempCommande = this.chauffageInfo.getChauffageTemp();
+
             LOGGER.trace("Recup température appartement");
             final Float curTemp = this.arduinoReader.getInfos().getTemperature();
 
             if (curTemp != null) {
-                LOGGER.trace("Comparaison température: commande : {}, current: {}", this.chauffageInfo.getChauffageTemp(), curTemp);
-                final boolean chauffageToLow = this.chauffageInfo.getChauffageTemp() >= curTemp;
-                final boolean chauffageToHigh = this.chauffageInfo.getChauffageTemp() < curTemp;
+                LOGGER.trace("Comparaison température: commande : {}, current: {}", tempCommande, curTemp);
+                final boolean chauffageToLow = tempCommande >= curTemp;
 
                 if (chauffageToLow) {
                     LOGGER.trace("Chauffage a allumer");
                     return new UnsureBoolean(true);
-                }
-                if (chauffageToHigh) {
+                } else {
                     LOGGER.trace("Chauffage a eteindre");
                     return new UnsureBoolean(false);
                 }
@@ -114,15 +119,22 @@ public class Chauffage extends AbstractFeature implements IChauffage {
     }
 
     @Override
-    public void save() {
+    public boolean save() {
         this.switchChauffage();
+        this.fireDataChanged();
+        return true;
+    }
+
+    @Override
+    public void changeMode() {
+        this.switchChauffageHourMode();
         this.fireDataChanged();
     }
 
     @Override
     public void changeTemperature(final boolean up) {
         try {
-            int temp = this.jdbc.getCurrentTemp();
+            int temp = this.jdbc.getCurrentTemp(false);
             temp += up ? 1 : -1;
             this.jdbc.setCurrentTemp(temp);
             this.fillInfos();
@@ -132,28 +144,47 @@ public class Chauffage extends AbstractFeature implements IChauffage {
 
     }
 
-    private void fillInfos() throws SQLException {
-        LOGGER.trace("Chauffage.fillInfos");
-        final Boolean oldMode = this.chauffageInfo.getChauffageMode();
-        final Boolean newMode = this.jdbc.getCommandeChauffage();
-        final Integer oldTemp = this.chauffageInfo.getChauffageTemp();
-        final Integer newTemp = this.jdbc.getCurrentTemp();
-
-        this.chauffageInfo.setChauffageMode(newMode);
-        this.chauffageInfo.setChauffageTemp(newTemp);
-
-        if (this.detectChange(oldMode, newMode, oldTemp, newTemp)) {
-            this.fireDataChanged();
+    @Override
+    public void changeTemperatureHour(final boolean up, final Integer startHour) {
+        try {
+            final SimpleDateFormat dateFormat = new SimpleDateFormat("HH");
+            final Date startDate = dateFormat.parse(startHour.toString());
+            int temp = this.jdbc.getTempForStartHour(startDate);
+            temp += up ? 1 : -1;
+            this.jdbc.setTemp(temp, startDate);
+            this.fillInfos();
+        } catch (final SQLException | ParseException e) {
+            LOGGER.error("Erreur de sauvegarde de la nouvelle température", e);
         }
+
     }
 
-    private boolean detectChange(final Boolean oldMode, final Boolean newMode, final Integer oldTemp, final Integer newTemp) {
-        return oldTemp != null && oldMode != null && (!oldTemp.equals(newTemp) || !oldMode.equals(newMode));
+    private void fillInfos() throws SQLException {
+        LOGGER.trace("Chauffage.fillInfos");
+
+        final Boolean newMode = this.jdbc.getCommandeChauffage();
+        this.chauffageInfo.setChauffageMode(newMode);
+        final Boolean newHourMode = this.jdbc.getHourModeChauffage();
+        this.chauffageInfo.setChauffageHourMode(newHourMode);
+        //Mode horaire: il faut récupérer une autre température de commande
+        final Integer newTemp = this.jdbc.getCurrentTemp(this.chauffageInfo.getChauffageHourMode());
+        this.chauffageInfo.setChauffageTemp(newTemp);
+        this.chauffageInfo.setTempByHoursMap(this.jdbc.getTempMap());
+
+        this.fireDataChanged();
     }
 
     private void switchChauffage() {
         try {
             this.chauffageInfo.setChauffageMode(this.jdbc.switchCommandeChauffage());
+        } catch (final SQLException e) {
+            LOGGER.error("Erreur de sauvegarde du switch chauffage", e);
+        }
+    }
+
+    private void switchChauffageHourMode() {
+        try {
+            this.chauffageInfo.setChauffageHourMode(this.jdbc.switchHourModeChauffage());
         } catch (final SQLException e) {
             LOGGER.error("Erreur de sauvegarde du switch chauffage", e);
         }
@@ -180,6 +211,23 @@ public class Chauffage extends AbstractFeature implements IChauffage {
 
         } else {
             infos.put(INFOS.MODECHAUFF.name(), "N/A");
+        }
+
+        if (this.chauffageInfo.getChauffageHourMode() != null) {
+            if (this.chauffageInfo.getChauffageHourMode()) {
+                infos.put(INFOS.TEMPHOURMODE.name(), "ON");
+            } else {
+                infos.put(INFOS.TEMPHOURMODE.name(), "OFF");
+            }
+
+        } else {
+            infos.put(INFOS.TEMPHOURMODE.name(), "N/A");
+        }
+
+        final DateFormat df = new SimpleDateFormat("HH");
+        for (final Map.Entry<Date, Integer> progTemps : this.chauffageInfo.getTempByHoursMap().entrySet()) {
+            final String hour = df.format(progTemps.getKey());
+            infos.put(INFOS.TEMPCHAUFFTIME.name() + hour, progTemps.getValue().toString());
         }
 
         return infos;

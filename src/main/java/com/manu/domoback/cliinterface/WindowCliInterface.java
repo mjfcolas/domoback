@@ -13,18 +13,19 @@ import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.manu.domoback.common.Bundles;
 import com.manu.domoback.common.NumberUtils;
 import com.manu.domoback.common.StringUtils;
+import com.manu.domoback.enums.FLOATMODE;
+import com.manu.domoback.enums.INFOS;
+import com.manu.domoback.enums.MODE;
+import com.manu.domoback.enums.UNITS;
 import com.manu.domoback.features.IChauffage;
 import com.manu.domoback.features.IFeature;
 import com.manu.domoback.features.IFeatureWrapper;
-import com.manu.domoback.features.ReturnKeys;
 import com.manu.domoback.listeners.DataListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class WindowCliInterface implements DataListener, WindowListener, IUserInterface {
@@ -47,10 +48,14 @@ public class WindowCliInterface implements DataListener, WindowListener, IUserIn
     private static final double TMAX = 40;
 
     private final EnumMap<MODE, Label> mainTitleLabels = new EnumMap<>(MODE.class);
-    private final EnumMap<ReturnKeys, Label> titleLabels = new EnumMap<>(ReturnKeys.class);
-    private final EnumMap<ReturnKeys, Label> valueLabels = new EnumMap<>(ReturnKeys.class);
+    private final EnumMap<INFOS, Label> titleLabels = new EnumMap<>(INFOS.class);
+    private final EnumMap<INFOS, Label> valueLabels = new EnumMap<>(INFOS.class);
     private final Map<String, Label> tempIndicLabels = new HashMap<>();
     private final Map<String, Label> intIndicLabels = new HashMap<>();
+    private final Map<String, Label> hoursIndicLabel = new HashMap<>();
+    private final Map<String, Label> hoursValueLabel = new HashMap<>();
+    private final List<TabableLabel> tabableLabels = new ArrayList<>();
+    private Integer selectedTabableLabelIndex = 0;
 
     protected Map<String, String> infos = new HashMap<>();
 
@@ -99,42 +104,46 @@ public class WindowCliInterface implements DataListener, WindowListener, IUserIn
         this.mainTitleLabels.put(MODE.METEO, titleMeteo);
         this.mainTitleLabels.put(MODE.CHAUFFAGE, titleChauff);
 
-        this.titleLabels.put(ReturnKeys.ADCO, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.address"), FLOATMODE.RIGHT, 2, 2));
-        this.titleLabels.put(ReturnKeys.OPTARIF, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.optarif"), FLOATMODE.RIGHT, 2, 3));
-        this.titleLabels.put(ReturnKeys.ISOUSC, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.isousc"), FLOATMODE.RIGHT, 2, 4));
-        this.titleLabels.put(ReturnKeys.HHPHC, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.trhor"), FLOATMODE.RIGHT, 6, 2));
-        this.titleLabels.put(ReturnKeys.HCHC, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.hc"), FLOATMODE.RIGHT, 6, 3));
-        this.titleLabels.put(ReturnKeys.HCHP, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.hp"), FLOATMODE.RIGHT, 6, 4));
-        this.titleLabels.put(ReturnKeys.IINST, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.iinst"), FLOATMODE.RIGHT, 2, 6));
+        this.titleLabels.put(INFOS.ADCO, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.address"), FLOATMODE.RIGHT, 2, 2));
+        this.titleLabels.put(INFOS.OPTARIF, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.optarif"), FLOATMODE.RIGHT, 2, 3));
+        this.titleLabels.put(INFOS.ISOUSC, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.isousc"), FLOATMODE.RIGHT, 2, 4));
+        this.titleLabels.put(INFOS.HHPHC, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.trhor"), FLOATMODE.RIGHT, 6, 2));
+        this.titleLabels.put(INFOS.HCHC, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.hc"), FLOATMODE.RIGHT, 6, 3));
+        this.titleLabels.put(INFOS.HCHP, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.hp"), FLOATMODE.RIGHT, 6, 4));
+        this.titleLabels.put(INFOS.IINST, this.createLabel(Bundles.messages().getProperty("gui.teleinfo.label.iinst"), FLOATMODE.RIGHT, 2, 6));
 
-        this.valueLabels.put(ReturnKeys.ADCO, this.createLabel("", FLOATMODE.LEFT, 3, 2));
-        this.valueLabels.put(ReturnKeys.OPTARIF, this.createLabel("", FLOATMODE.LEFT, 3, 3));
-        this.valueLabels.put(ReturnKeys.ISOUSC, this.createLabel("", FLOATMODE.LEFT, 3, 4));
-        this.valueLabels.put(ReturnKeys.HHPHC, this.createLabel("", FLOATMODE.LEFT, 7, 2));
-        this.valueLabels.put(ReturnKeys.HCHC, this.createLabel("", FLOATMODE.LEFT, 7, 3));
-        this.valueLabels.put(ReturnKeys.HCHP, this.createLabel("", FLOATMODE.LEFT, 7, 4));
-        this.valueLabels.put(ReturnKeys.IINST, this.createLabel("", FLOATMODE.LEFT, 3, 6));
+        this.valueLabels.put(INFOS.ADCO, this.createLabel("", FLOATMODE.LEFT, 3, 2));
+        this.valueLabels.put(INFOS.OPTARIF, this.createLabel("", FLOATMODE.LEFT, 3, 3));
+        this.valueLabels.put(INFOS.ISOUSC, this.createLabel("", FLOATMODE.LEFT, 3, 4));
+        this.valueLabels.put(INFOS.HHPHC, this.createLabel("", FLOATMODE.LEFT, 7, 2));
+        this.valueLabels.put(INFOS.HCHC, this.createLabel("", FLOATMODE.LEFT, 7, 3));
+        this.valueLabels.put(INFOS.HCHP, this.createLabel("", FLOATMODE.LEFT, 7, 4));
+        this.valueLabels.put(INFOS.IINST, this.createLabel("", FLOATMODE.LEFT, 3, 6));
 
-        this.titleLabels.put(ReturnKeys.TEMP, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.tint"), FLOATMODE.RIGHT, 2, 2));
-        this.titleLabels.put(ReturnKeys.TEMP2, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.tcha"), FLOATMODE.RIGHT, 2, 3));
-        this.titleLabels.put(ReturnKeys.ABSPRE, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.pabs"), FLOATMODE.RIGHT, 2, 4));
-        this.titleLabels.put(ReturnKeys.RELPRE, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.prel"), FLOATMODE.RIGHT, 2, 5));
-        this.titleLabels.put(ReturnKeys.HYGROHUM, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.hum"), FLOATMODE.RIGHT, 2, 6));
+        this.titleLabels.put(INFOS.TEMP, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.tint"), FLOATMODE.RIGHT, 2, 2));
+        this.titleLabels.put(INFOS.TEMP2, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.tcha"), FLOATMODE.RIGHT, 2, 3));
+        this.titleLabels.put(INFOS.ABSPRE, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.pabs"), FLOATMODE.RIGHT, 2, 4));
+        this.titleLabels.put(INFOS.RELPRE, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.prel"), FLOATMODE.RIGHT, 2, 5));
+        this.titleLabels.put(INFOS.HYGROHUM, this.createLabel(Bundles.messages().getProperty("gui.meteo.label.hum"), FLOATMODE.RIGHT, 2, 6));
 
-        this.valueLabels.put(ReturnKeys.TEMP, this.createLabel("", FLOATMODE.LEFT, 3, 2));
-        this.valueLabels.put(ReturnKeys.TEMP2, this.createLabel("", FLOATMODE.LEFT, 3, 3));
-        this.valueLabels.put(ReturnKeys.ABSPRE, this.createLabel("", FLOATMODE.LEFT, 3, 4));
-        this.valueLabels.put(ReturnKeys.RELPRE, this.createLabel("", FLOATMODE.LEFT, 3, 5));
-        this.valueLabels.put(ReturnKeys.HYGROHUM, this.createLabel("", FLOATMODE.LEFT, 3, 6));
+        this.valueLabels.put(INFOS.TEMP, this.createLabel("", FLOATMODE.LEFT, 3, 2));
+        this.valueLabels.put(INFOS.TEMP2, this.createLabel("", FLOATMODE.LEFT, 3, 3));
+        this.valueLabels.put(INFOS.ABSPRE, this.createLabel("", FLOATMODE.LEFT, 3, 4));
+        this.valueLabels.put(INFOS.RELPRE, this.createLabel("", FLOATMODE.LEFT, 3, 5));
+        this.valueLabels.put(INFOS.HYGROHUM, this.createLabel("", FLOATMODE.LEFT, 3, 6));
 
-        this.titleLabels.put(ReturnKeys.MODECHAUFF, this.createLabel(Bundles.messages().getProperty("gui.chauff.label.state"), FLOATMODE.RIGHT, 2, 2));
-        this.titleLabels.put(ReturnKeys.TEMPCHAUFF, this.createLabel(Bundles.messages().getProperty("gui.chauff.label.temp"), FLOATMODE.RIGHT, 2, 3));
+        this.titleLabels.put(INFOS.TEMPHOURMODE, this.createLabel(Bundles.messages().getProperty("gui.chauff.label.hourmode"), FLOATMODE.RIGHT, 2, 2));
+        this.titleLabels.put(INFOS.MODECHAUFF, this.createLabel(Bundles.messages().getProperty("gui.chauff.label.state"), FLOATMODE.RIGHT, 2, 3));
+        this.titleLabels.put(INFOS.TEMPCHAUFF, this.createLabel(Bundles.messages().getProperty("gui.chauff.label.temp"), FLOATMODE.RIGHT, 2, 4));
 
-        this.valueLabels.put(ReturnKeys.MODECHAUFF, this.createLabel("", FLOATMODE.LEFT, 3, 2));
-        this.valueLabels.put(ReturnKeys.TEMPCHAUFF, this.createLabel("", FLOATMODE.LEFT, 3, 3));
+        this.valueLabels.put(INFOS.TEMPHOURMODE, this.createLabel("", FLOATMODE.LEFT, 3, 2));
+        this.valueLabels.put(INFOS.MODECHAUFF, this.createLabel("", FLOATMODE.LEFT, 3, 3));
+        this.valueLabels.put(INFOS.TEMPCHAUFF, this.createTabableLabel("GENERAL", "", FLOATMODE.LEFT, 3, 4));
+        this.tabableLabels.add((TabableLabel) this.valueLabels.get(INFOS.TEMPCHAUFF));
 
         this.createTempIndicator();
         this.createIntensityIndicator();
+        this.createHourIndicator();
 
     }
 
@@ -157,6 +166,23 @@ public class WindowCliInterface implements DataListener, WindowListener, IUserIn
         this.intIndicLabels.put("80", this.createLabel("| 80 %", FLOATMODE.LEFT, 5, 9));
         this.intIndicLabels.put("100", this.createLabel("| 100 %", FLOATMODE.LEFT, 6, 9));
         this.intIndicLabels.putAll(this.createBarre(1, 7, 5));
+    }
+
+    private void createHourIndicator() {
+
+        for (Integer i = 0; i < 12; i++) {
+            final String key = INFOS.TEMPCHAUFFTIME.name() + String.format("%02d", i);
+            this.hoursIndicLabel.put(key, this.createLabel(this.addUnit(i.toString(), UNITS.HOURS), FLOATMODE.LEFT, i, 9, 6));
+            this.hoursValueLabel.put(key, this.createTabableLabel(i.toString(), "", FLOATMODE.LEFT, i, 7, 6));
+            this.tabableLabels.add((TabableLabel) this.hoursValueLabel.get(key));
+        }
+        for (Integer i = 12; i < 24; i++) {
+            final String key = INFOS.TEMPCHAUFFTIME.name() + String.format("%02d", i);
+            this.hoursIndicLabel.put(INFOS.TEMPCHAUFFTIME.name() + String.format("%02d", i), this.createLabel(this.addUnit(i.toString(), UNITS.HOURS), FLOATMODE.LEFT, i - 12, 13, 6));
+            this.hoursValueLabel.put(INFOS.TEMPCHAUFFTIME.name() + String.format("%02d", i), this.createTabableLabel(i.toString(), "", FLOATMODE.LEFT, i - 12, 11, 6));
+            this.tabableLabels.add((TabableLabel) this.hoursValueLabel.get(key));
+        }
+
     }
 
     private Map<String, Label> createBarre(final int posX, final int posY, final int length) {
@@ -210,19 +236,37 @@ public class WindowCliInterface implements DataListener, WindowListener, IUserIn
         label.setText(StringUtils.repeat(' ', spaceNumber));
     }
 
-    private Label createLabel(final String labelTxt, final FLOATMODE horiz, final int posX, final int posY) {
+    private Label createLabel(final String labelTxt, final FLOATMODE horiz, final int posX, final int posY, final int columnSize) {
         final Label label = new Label(labelTxt);
+        this.prepareLabel(label, labelTxt, horiz, posX, posY, columnSize);
+        return label;
+    }
+
+    private TabableLabel createTabableLabel(final String id, final String labelTxt, final FLOATMODE horiz, final int posX, final int posY, final int columnSize) {
+        final TabableLabel label = new TabableLabel(labelTxt, id);
+        this.prepareLabel(label, labelTxt, horiz, posX, posY, columnSize);
+        return label;
+    }
+
+    private TabableLabel createTabableLabel(final String id, final String labelTxt, final FLOATMODE horiz, final int posX, final int posY) {
+        return this.createTabableLabel(id, labelTxt, horiz, posX, posY, COLUMN_SIZE);
+    }
+
+    private Label createLabel(final String labelTxt, final FLOATMODE horiz, final int posX, final int posY) {
+        return this.createLabel(labelTxt, horiz, posX, posY, COLUMN_SIZE);
+    }
+
+    private void prepareLabel(final Label label, final String labelTxt, final FLOATMODE horiz, final int posX, final int posY, final int columnSize) {
         label.setForegroundColor(TextColor.ANSI.WHITE);
         label.setLayoutData(GridLayout.createLayoutData(GridLayout.Alignment.BEGINNING, GridLayout.Alignment.CENTER));
-        int computedPos = posX * COLUMN_SIZE;
+        int computedPos = posX * columnSize;
         if (horiz == FLOATMODE.RIGHT) {
-            final int offset = COLUMN_SIZE - labelTxt.length();
+            final int offset = columnSize - labelTxt.length();
             computedPos += offset;
         }
         computedPos = Math.max(0, computedPos);
         label.setPosition(new TerminalPosition(computedPos, posY));
-        label.setSize(new TerminalSize(Math.max(COLUMN_SIZE, labelTxt.length()), 1));
-        return label;
+        label.setSize(new TerminalSize(Math.max(columnSize, labelTxt.length()), 1));
     }
 
     private void createTeleinfoPanel() {
@@ -232,21 +276,21 @@ public class WindowCliInterface implements DataListener, WindowListener, IUserIn
 
         this.contentPanel.addComponent(this.mainTitleLabels.get(MODE.TELEINFO));
 
-        this.contentPanel.addComponent(this.titleLabels.get(ReturnKeys.ADCO));
-        this.contentPanel.addComponent(this.titleLabels.get(ReturnKeys.OPTARIF));
-        this.contentPanel.addComponent(this.titleLabels.get(ReturnKeys.ISOUSC));
-        this.contentPanel.addComponent(this.titleLabels.get(ReturnKeys.HHPHC));
-        this.contentPanel.addComponent(this.titleLabels.get(ReturnKeys.HCHC));
-        this.contentPanel.addComponent(this.titleLabels.get(ReturnKeys.HCHP));
-        this.contentPanel.addComponent(this.titleLabels.get(ReturnKeys.IINST));
+        this.contentPanel.addComponent(this.titleLabels.get(INFOS.ADCO));
+        this.contentPanel.addComponent(this.titleLabels.get(INFOS.OPTARIF));
+        this.contentPanel.addComponent(this.titleLabels.get(INFOS.ISOUSC));
+        this.contentPanel.addComponent(this.titleLabels.get(INFOS.HHPHC));
+        this.contentPanel.addComponent(this.titleLabels.get(INFOS.HCHC));
+        this.contentPanel.addComponent(this.titleLabels.get(INFOS.HCHP));
+        this.contentPanel.addComponent(this.titleLabels.get(INFOS.IINST));
 
-        this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.ADCO));
-        this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.OPTARIF));
-        this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.ISOUSC));
-        this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.HHPHC));
-        this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.HCHC));
-        this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.HCHP));
-        this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.IINST));
+        this.contentPanel.addComponent(this.valueLabels.get(INFOS.ADCO));
+        this.contentPanel.addComponent(this.valueLabels.get(INFOS.OPTARIF));
+        this.contentPanel.addComponent(this.valueLabels.get(INFOS.ISOUSC));
+        this.contentPanel.addComponent(this.valueLabels.get(INFOS.HHPHC));
+        this.contentPanel.addComponent(this.valueLabels.get(INFOS.HCHC));
+        this.contentPanel.addComponent(this.valueLabels.get(INFOS.HCHP));
+        this.contentPanel.addComponent(this.valueLabels.get(INFOS.IINST));
 
         for (final Label current : this.intIndicLabels.values()) {
             this.contentPanel.addComponent(current);
@@ -263,17 +307,17 @@ public class WindowCliInterface implements DataListener, WindowListener, IUserIn
 
         this.contentPanel.addComponent(this.mainTitleLabels.get(MODE.METEO));
 
-        this.contentPanel.addComponent(this.titleLabels.get(ReturnKeys.TEMP));
-        this.contentPanel.addComponent(this.titleLabels.get(ReturnKeys.TEMP2));
-        this.contentPanel.addComponent(this.titleLabels.get(ReturnKeys.ABSPRE));
-        this.contentPanel.addComponent(this.titleLabels.get(ReturnKeys.RELPRE));
-        this.contentPanel.addComponent(this.titleLabels.get(ReturnKeys.HYGROHUM));
+        this.contentPanel.addComponent(this.titleLabels.get(INFOS.TEMP));
+        this.contentPanel.addComponent(this.titleLabels.get(INFOS.TEMP2));
+        this.contentPanel.addComponent(this.titleLabels.get(INFOS.ABSPRE));
+        this.contentPanel.addComponent(this.titleLabels.get(INFOS.RELPRE));
+        this.contentPanel.addComponent(this.titleLabels.get(INFOS.HYGROHUM));
 
-        this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.TEMP));
-        this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.TEMP2));
-        this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.ABSPRE));
-        this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.RELPRE));
-        this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.HYGROHUM));
+        this.contentPanel.addComponent(this.valueLabels.get(INFOS.TEMP));
+        this.contentPanel.addComponent(this.valueLabels.get(INFOS.TEMP2));
+        this.contentPanel.addComponent(this.valueLabels.get(INFOS.ABSPRE));
+        this.contentPanel.addComponent(this.valueLabels.get(INFOS.RELPRE));
+        this.contentPanel.addComponent(this.valueLabels.get(INFOS.HYGROHUM));
 
         for (final Label current : this.tempIndicLabels.values()) {
             this.contentPanel.addComponent(current);
@@ -289,11 +333,20 @@ public class WindowCliInterface implements DataListener, WindowListener, IUserIn
 
         this.contentPanel.addComponent(this.mainTitleLabels.get(MODE.CHAUFFAGE));
 
-        this.contentPanel.addComponent(this.titleLabels.get(ReturnKeys.MODECHAUFF));
-        this.contentPanel.addComponent(this.titleLabels.get(ReturnKeys.TEMPCHAUFF));
+        this.contentPanel.addComponent(this.titleLabels.get(INFOS.TEMPHOURMODE));
+        this.contentPanel.addComponent(this.titleLabels.get(INFOS.MODECHAUFF));
+        this.contentPanel.addComponent(this.titleLabels.get(INFOS.TEMPCHAUFF));
 
-        this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.MODECHAUFF));
-        this.contentPanel.addComponent(this.valueLabels.get(ReturnKeys.TEMPCHAUFF));
+        this.contentPanel.addComponent(this.valueLabels.get(INFOS.TEMPHOURMODE));
+        this.contentPanel.addComponent(this.valueLabels.get(INFOS.MODECHAUFF));
+        this.contentPanel.addComponent(this.valueLabels.get(INFOS.TEMPCHAUFF));
+
+        for (final Label current : this.hoursIndicLabel.values()) {
+            this.contentPanel.addComponent(current);
+        }
+        for (final Label current : this.hoursValueLabel.values()) {
+            this.contentPanel.addComponent(current);
+        }
 
         this.window.setComponent(this.contentPanel);
     }
@@ -318,36 +371,55 @@ public class WindowCliInterface implements DataListener, WindowListener, IUserIn
     }
 
     private void changedTeleinfo() {
-        this.valueLabels.get(ReturnKeys.ADCO).setText(this.infos.getOrDefault(ReturnKeys.ADCO.name(), ""));
-        this.valueLabels.get(ReturnKeys.OPTARIF).setText(this.infos.getOrDefault(ReturnKeys.OPTARIF.name(), ""));
-        this.valueLabels.get(ReturnKeys.ISOUSC).setText(this.addUnit(this.infos.getOrDefault(ReturnKeys.ISOUSC.name(), ""), UNITS.A));
-        this.valueLabels.get(ReturnKeys.HHPHC).setText(this.infos.getOrDefault(ReturnKeys.HHPHC.name(), ""));
-        this.valueLabels.get(ReturnKeys.HCHC).setText(this.addUnit(this.infos.getOrDefault(ReturnKeys.HCHC.name(), ""), UNITS.WH));
-        this.valueLabels.get(ReturnKeys.HCHP).setText(this.addUnit(this.infos.getOrDefault(ReturnKeys.HCHP.name(), ""), UNITS.WH));
-        this.valueLabels.get(ReturnKeys.IINST).setText(this.addUnit(this.infos.getOrDefault(ReturnKeys.IINST.name(), ""), UNITS.A));
-        if (this.infos.containsKey((ReturnKeys.IINST.name()))
-                && NumberUtils.tryParseDouble(this.infos.get(ReturnKeys.IINST.name()))
-                && this.infos.containsKey((ReturnKeys.ISOUSC.name()))
-                && NumberUtils.tryParseDouble(this.infos.get(ReturnKeys.ISOUSC.name()))) {
-            this.fillBarre(this.intIndicLabels, Double.parseDouble(this.infos.get(ReturnKeys.IINST.name())), Double.parseDouble(this.infos.get(ReturnKeys.ISOUSC.name())));
+        this.valueLabels.get(INFOS.ADCO).setText(this.infos.getOrDefault(INFOS.ADCO.name(), ""));
+        this.valueLabels.get(INFOS.OPTARIF).setText(this.infos.getOrDefault(INFOS.OPTARIF.name(), ""));
+        this.valueLabels.get(INFOS.ISOUSC).setText(this.addUnit(this.infos.getOrDefault(INFOS.ISOUSC.name(), ""), UNITS.A));
+        this.valueLabels.get(INFOS.HHPHC).setText(this.infos.getOrDefault(INFOS.HHPHC.name(), ""));
+        this.valueLabels.get(INFOS.HCHC).setText(this.addUnit(this.infos.getOrDefault(INFOS.HCHC.name(), ""), UNITS.WH));
+        this.valueLabels.get(INFOS.HCHP).setText(this.addUnit(this.infos.getOrDefault(INFOS.HCHP.name(), ""), UNITS.WH));
+        this.valueLabels.get(INFOS.IINST).setText(this.addUnit(this.infos.getOrDefault(INFOS.IINST.name(), ""), UNITS.A));
+        if (this.infos.containsKey((INFOS.IINST.name()))
+                && NumberUtils.tryParseDouble(this.infos.get(INFOS.IINST.name()))
+                && this.infos.containsKey((INFOS.ISOUSC.name()))
+                && NumberUtils.tryParseDouble(this.infos.get(INFOS.ISOUSC.name()))) {
+            this.fillBarre(this.intIndicLabels, Double.parseDouble(this.infos.get(INFOS.IINST.name())), Double.parseDouble(this.infos.get(INFOS.ISOUSC.name())));
         }
     }
 
     private void changedMeteo() {
-        this.valueLabels.get(ReturnKeys.TEMP).setText(this.addUnit(this.infos.get(ReturnKeys.TEMP.name()), UNITS.C));
-        this.valueLabels.get(ReturnKeys.TEMP2).setText(this.addUnit(this.infos.get(ReturnKeys.TEMP2.name()), UNITS.C));
-        this.valueLabels.get(ReturnKeys.ABSPRE).setText(this.addUnit(this.infos.get(ReturnKeys.ABSPRE.name()), UNITS.HPA));
-        this.valueLabels.get(ReturnKeys.RELPRE).setText(this.addUnit(this.infos.get(ReturnKeys.RELPRE.name()), UNITS.HPA));
-        this.valueLabels.get(ReturnKeys.HYGROHUM).setText(this.addUnit(this.infos.get(ReturnKeys.HYGROHUM.name()), UNITS.PERCENT));
-        if (this.infos.containsKey((ReturnKeys.TEMP.name()))
-                && NumberUtils.tryParseDouble(this.infos.get(ReturnKeys.TEMP.name()))) {
-            this.fillBarre(this.tempIndicLabels, Double.parseDouble(this.infos.get(ReturnKeys.TEMP.name())), TMAX);
+        this.valueLabels.get(INFOS.TEMP).setText(this.addUnit(this.infos.get(INFOS.TEMP.name()), UNITS.C));
+        this.valueLabels.get(INFOS.TEMP2).setText(this.addUnit(this.infos.get(INFOS.TEMP2.name()), UNITS.C));
+        this.valueLabels.get(INFOS.ABSPRE).setText(this.addUnit(this.infos.get(INFOS.ABSPRE.name()), UNITS.HPA));
+        this.valueLabels.get(INFOS.RELPRE).setText(this.addUnit(this.infos.get(INFOS.RELPRE.name()), UNITS.HPA));
+        this.valueLabels.get(INFOS.HYGROHUM).setText(this.addUnit(this.infos.get(INFOS.HYGROHUM.name()), UNITS.PERCENT));
+        if (this.infos.containsKey((INFOS.TEMP.name()))
+                && NumberUtils.tryParseDouble(this.infos.get(INFOS.TEMP.name()))) {
+            this.fillBarre(this.tempIndicLabels, Double.parseDouble(this.infos.get(INFOS.TEMP.name())), TMAX);
         }
     }
 
     private void changedChauffage() {
-        this.valueLabels.get(ReturnKeys.MODECHAUFF).setText(this.infos.get(ReturnKeys.MODECHAUFF.name()));
-        this.valueLabels.get(ReturnKeys.TEMPCHAUFF).setText(this.addUnit(this.infos.get(ReturnKeys.TEMPCHAUFF.name()), UNITS.C));
+        this.valueLabels.get(INFOS.TEMPHOURMODE).setText(this.infos.get(INFOS.TEMPHOURMODE.name()));
+        this.valueLabels.get(INFOS.MODECHAUFF).setText(this.infos.get(INFOS.MODECHAUFF.name()));
+        this.valueLabels.get(INFOS.TEMPCHAUFF).setText(this.addUnit(this.infos.get(INFOS.TEMPCHAUFF.name()), UNITS.C));
+        for (final Map.Entry<String, Label> entry : this.hoursValueLabel.entrySet()) {
+            entry.getValue().setText(this.addUnit(this.infos.get(entry.getKey()), UNITS.C));
+        }
+        if (this.selectedTabableLabelIndex == 0) {
+            this.highLightLabel(this.valueLabels.get(INFOS.TEMPCHAUFF));
+        } else {
+            final Integer tempLabelIndex = this.selectedTabableLabelIndex - 1;
+            this.highLightLabel(this.hoursValueLabel.get(INFOS.TEMPCHAUFFTIME.name() + String.format("%02d", tempLabelIndex)));
+        }
+    }
+
+    private void highLightLabel(final Label label) {
+        for (final Label labelToReset : this.tabableLabels) {
+            labelToReset.setBackgroundColor(TextColor.ANSI.BLACK);
+            labelToReset.setForegroundColor(TextColor.ANSI.WHITE);
+        }
+        label.setBackgroundColor(TextColor.ANSI.WHITE);
+        label.setForegroundColor(TextColor.ANSI.BLACK);
     }
 
     private void updateDisplayTrame() {
@@ -387,6 +459,8 @@ public class WindowCliInterface implements DataListener, WindowListener, IUserIn
             result += "%";
         } else if (UNITS.HPA.equals(unit)) {
             result += "hPa";
+        } else if (UNITS.HOURS.equals(unit)) {
+            result += "h";
         }
         return result;
     }
@@ -406,12 +480,31 @@ public class WindowCliInterface implements DataListener, WindowListener, IUserIn
         if (this.mode == MODE.CHAUFFAGE) {
             if (keyStroke.getKeyType() == KeyType.F9) {
                 this.chauffage.save();
+            } else if (keyStroke.getKeyType() == KeyType.F8) {
+                this.chauffage.changeMode();
+            } else if (keyStroke.getKeyType() == KeyType.Tab) {
+                this.selectedTabableLabelIndex++;
+                if (this.selectedTabableLabelIndex >= this.tabableLabels.size()) {
+                    this.selectedTabableLabelIndex = 0;
+                }
+                this.changedOccured();
             } else if (keyStroke.getKeyType() == KeyType.ArrowUp) {
-                this.chauffage.changeTemperature(true);
+                this.manageTemperatureChange(true);
             } else if (keyStroke.getKeyType() == KeyType.ArrowDown) {
-                this.chauffage.changeTemperature(false);
+                this.manageTemperatureChange(false);
             }
         }
+    }
+
+    private void manageTemperatureChange(final boolean isUp) {
+        final String idSelectedLabel = this.tabableLabels.get(this.selectedTabableLabelIndex).getId();
+        if ("GENERAL".equals(idSelectedLabel)) {
+            this.chauffage.changeTemperature(isUp);
+        } else {
+            final Integer startHour = Integer.parseInt(idSelectedLabel);
+            this.chauffage.changeTemperatureHour(isUp, startHour);
+        }
+
     }
 
     @Override

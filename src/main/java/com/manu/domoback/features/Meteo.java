@@ -2,8 +2,8 @@ package com.manu.domoback.features;
 
 import com.manu.domoback.arduinoreader.IArduinoReader;
 import com.manu.domoback.arduinoreader.IExternalInfos;
-import com.manu.domoback.arduinoreader.INFOS;
 import com.manu.domoback.database.IJdbc;
+import com.manu.domoback.enums.INFOS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,7 @@ public class Meteo extends AbstractFeature implements IMeteo {
     }
 
     @Override
-    public void save() {
+    public boolean save() {
         try {
             if (this.meteoInfos != null) {
                 int type = 0;
@@ -75,7 +75,7 @@ public class Meteo extends AbstractFeature implements IMeteo {
         } catch (final Exception e) {
             LOGGER.error("Erreur de sauvegarde météo", e);
         }
-
+        return true;
     }
 
     private Map<String, String> formatInfos() {

@@ -1,4 +1,4 @@
-package com.manu.domoback.arduinoreader;
+package com.manu.domoback.enums;
 
 public enum InfoKeys {
     MK,

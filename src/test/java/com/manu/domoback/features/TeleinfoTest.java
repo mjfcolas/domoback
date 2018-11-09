@@ -29,6 +29,6 @@ public class TeleinfoTest extends TestCase {
     @Test
     public void testSave() {
         this.teleinfo.run();
-        this.teleinfo.save();
+        assertTrue(this.teleinfo.save());
     }
 }

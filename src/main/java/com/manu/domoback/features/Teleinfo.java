@@ -2,6 +2,7 @@ package com.manu.domoback.features;
 
 import com.manu.domoback.common.Bundles;
 import com.manu.domoback.database.IJdbc;
+import com.manu.domoback.enums.INFOS;
 import com.manu.domoback.teleinfo.ProcessSignal;
 import com.manu.domoback.teleinfo.Trame;
 import org.slf4j.Logger;
@@ -58,21 +59,22 @@ public class Teleinfo extends AbstractFeature {
     }
 
     @Override
-    public void save() {
+    public boolean save() {
         try {
-            final String iInstStr = this.trameInfos.get("IINST");
-            final String hcAmountStr = this.trameInfos.get("HCHC");
-            final String hpAmountStr = this.trameInfos.get("HCHP");
+            final String iInstStr = this.trameInfos.get(INFOS.IINST.name());
+            final String hcAmountStr = this.trameInfos.get(INFOS.HCHC.name());
+            final String hpAmountStr = this.trameInfos.get(INFOS.HCHP.name());
             if (iInstStr != null && hcAmountStr != null && hpAmountStr != null) {
                 final Integer iInst = Integer.parseInt(iInstStr);
                 final Integer hcAmount = Integer.parseInt(hcAmountStr);
                 final Integer hpAmount = Integer.parseInt(hpAmountStr);
                 this.jdbc.saveTeleinfos(iInst, hcAmount, hpAmount);
+                return true;
             }
         } catch (final Exception e) {
             LOGGER.error("Erreur de sauvegarde téléinfo", e);
         }
-
+        return false;
     }
 
 }

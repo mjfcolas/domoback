@@ -1,5 +1,8 @@
 package com.manu.domoback.chauffage;
 
+import java.util.Date;
+import java.util.Map;
+
 public interface IChauffageInfo {
     /**
      * Mode du chauffage
@@ -7,6 +10,13 @@ public interface IChauffageInfo {
      * @return
      */
     Boolean getChauffageMode();
+
+    /**
+     * Mode hour/constant du chauffage
+     *
+     * @return
+     */
+    Boolean getChauffageHourMode();
 
     /**
      * Température demandée au chauffage
@@ -28,6 +38,13 @@ public interface IChauffageInfo {
      * @param chauffageMode
      */
     void setChauffageMode(Boolean chauffageMode);
+
+    /**
+     * Enregistre le mode hour/constant du chauffage
+     *
+     * @param chauffageHourMode
+     */
+    void setChauffageHourMode(Boolean chauffageHourMode);
 
     /**
      * Enregistre la température du chauffage
@@ -63,5 +80,19 @@ public interface IChauffageInfo {
      * @param chauffageStateKnown
      */
     void setChauffageStateKnown(Boolean chauffageStateKnown);
+
+    /**
+     * Map contenant la programmation de température selon les heures de départ
+     *
+     * @return
+     */
+    Map<Date, Integer> getTempByHoursMap();
+
+    /**
+     * Set de la pam contenant la programmation des températures selon les heures de départ
+     *
+     * @param tempByHoursMap
+     */
+    void setTempByHoursMap(final Map<Date, Integer> tempByHoursMap);
 
 }

@@ -1,6 +1,8 @@
 package com.manu.domoback.database;
 
 import java.sql.SQLException;
+import java.util.Date;
+import java.util.Map;
 
 public interface IJdbc {
 
@@ -35,12 +37,28 @@ public interface IJdbc {
     Boolean switchCommandeChauffage() throws SQLException;
 
     /**
+     * Changement du mode hour/constant du chauffage
+     *
+     * @return la nouvelle commande, ou null si erreur
+     * @throws SQLException
+     */
+    Boolean switchHourModeChauffage() throws SQLException;
+
+    /**
      * Récupère l'état du chauffage
      *
      * @return
      * @throws SQLException
      */
     Boolean getCommandeChauffage() throws SQLException;
+
+    /**
+     * Récupère le mode hour/constant du chauffage
+     *
+     * @return
+     * @throws SQLException
+     */
+    Boolean getHourModeChauffage() throws SQLException;
 
     /**
      * Sauvegarde la température demandée
@@ -51,10 +69,45 @@ public interface IJdbc {
     void setCurrentTemp(int temp) throws SQLException;
 
     /**
-     * Récupération de la dernière température enregistrée
+     * Set la température programmée pour une heure donnée
      *
+     * @param temp
+     * @param startTime
+     */
+    void setTemp(final int temp, final Date startTime);
+
+    /**
+     * Récupération de la température générale
+     *
+     * @param hourMode : get the temperature for the current hour if true, global temp else
      * @return La température enregistrée
      * @throws SQLException
      */
-    Integer getCurrentTemp() throws SQLException;
+    Integer getCurrentTemp(final boolean hourMode) throws SQLException;
+
+    /**
+     * Récupération de la température d'un créneau défini par son heure de départ
+     *
+     * @param startHour
+     * @return
+     * @throws SQLException
+     */
+    Integer getTempForStartHour(final Date startHour) throws SQLException;
+
+    /**
+     * Récupération de la température pour une heure donnée
+     *
+     * @param date
+     * @return
+     * @throws SQLException
+     */
+    Integer getTemp(Date date) throws SQLException;
+
+    /**
+     * Récupération de toutes les températures programmées sur des horaires
+     *
+     * @return
+     * @throws SQLException
+     */
+    Map<Date, Integer> getTempMap() throws SQLException;
 }

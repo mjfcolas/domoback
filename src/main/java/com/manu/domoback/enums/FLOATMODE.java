@@ -1,4 +1,4 @@
-package com.manu.domoback.cliinterface;
+package com.manu.domoback.enums;
 
 public enum FLOATMODE {
     LEFT,

@@ -1,6 +1,6 @@
-package com.manu.domoback.features;
+package com.manu.domoback.enums;
 
-public enum ReturnKeys {
+public enum INFOS {
     ADCO,
     OPTARIF,
     ISOUSC,
@@ -13,6 +13,8 @@ public enum ReturnKeys {
     ABSPRE,
     RELPRE,
     HYGROHUM,
+    TEMPCHAUFF,
     MODECHAUFF,
-    TEMPCHAUFF
+    TEMPCHAUFFTIME,
+    TEMPHOURMODE
 }

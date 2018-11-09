@@ -6,10 +6,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Jdbc implements IJdbc {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Jdbc.class.getName());
+    private static final String NO_COMMAND_PRESENT = "Aucune valeur de commande présente";
 
     @Override
     public Boolean getCommandeChauffage() throws SQLException {
@@ -21,7 +27,7 @@ public class Jdbc implements IJdbc {
 
             final Boolean currentMode = this.getCommandeChauffageInternal(statement);
             if (currentMode == null) {
-                throw new SQLException("Aucune valeur de commande déja présente");
+                throw new SQLException(NO_COMMAND_PRESENT);
             }
 
             return currentMode;
@@ -36,6 +42,37 @@ public class Jdbc implements IJdbc {
              Statement statement = connection.createStatement()) {
 
             final Boolean currentMode = this.getCommandeChauffageInternal(statement);
+            preparedStatement.setBoolean(1, !currentMode);
+            preparedStatement.executeUpdate();
+            return !currentMode;
+        }
+    }
+
+    @Override
+    public Boolean getHourModeChauffage() throws SQLException {
+        LOGGER.trace("Jdbc.getHourModeChauffage");
+        try (Connection connection = DataSource.getInstance().getConnection();
+             Statement statement = connection.createStatement()) {
+
+            LOGGER.trace("Jdbc.getHourModeChauffage - Connection got");
+
+            final Boolean currentMode = this.getHourModeChauffageInternal(statement);
+            if (currentMode == null) {
+                throw new SQLException(NO_COMMAND_PRESENT);
+            }
+
+            return currentMode;
+        }
+    }
+
+    @Override
+    public Boolean switchHourModeChauffage() throws SQLException {
+        final String sql = "INSERT INTO mode_chauff (hourmode) VALUES (?)";
+        try (Connection connection = DataSource.getInstance().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             Statement statement = connection.createStatement()) {
+
+            final Boolean currentMode = this.getHourModeChauffageInternal(statement);
             preparedStatement.setBoolean(1, !currentMode);
             preparedStatement.executeUpdate();
             return !currentMode;
@@ -76,7 +113,7 @@ public class Jdbc implements IJdbc {
 
     @Override
     public void setCurrentTemp(final int temp) {
-        final String sql = "INSERT INTO temp_chauff (temp) VALUES (?)";
+        final String sql = "UPDATE temp_chauff SET temp=? WHERE start_hour IS NULL";
         try (Connection connection = DataSource.getInstance().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, temp);
@@ -88,21 +125,140 @@ public class Jdbc implements IJdbc {
     }
 
     @Override
-    public Integer getCurrentTemp() throws SQLException {
-        LOGGER.trace("Jdbc.getCurrentTemp");
+    public void setTemp(final int temp, final Date startTime) {
+        final String sql = "UPDATE temp_chauff SET temp=? WHERE start_hour=? ";
         try (Connection connection = DataSource.getInstance().getConnection();
-             Statement statement = connection.createStatement()) {
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, temp);
+            preparedStatement.setTime(2, new Time(startTime.getTime()));
+            preparedStatement.executeUpdate();
+        } catch (final Exception ex) {
+            LOGGER.error(Bundles.messages().getProperty(Constants.KEY_GENERIC_ERROR), ex);
+        }
+
+    }
+
+    @Override
+    public Integer getCurrentTemp(final boolean hourMode) throws SQLException {
+        LOGGER.trace("Jdbc.getCurrentTemp");
+
+        if (hourMode) {
+            return this.getTemp(new Date());
+        } else {
+            try (Connection connection = DataSource.getInstance().getConnection();
+                 Statement statement = connection.createStatement()) {
+                Integer result = null;
+
+                final String sql = "SELECT temp FROM temp_chauff WHERE start_hour IS NULL";
+
+                try (ResultSet rs = statement.executeQuery(sql)) {
+                    while (rs.next()) {
+                        result = rs.getInt("temp");
+                    }
+                }
+                if (result == null) {
+                    throw new SQLException(NO_COMMAND_PRESENT);
+                }
+
+                return result;
+            }
+        }
+    }
+
+    @Override
+    public Integer getTemp(final Date date) throws SQLException {
+        LOGGER.trace("Jdbc.getTemp");
+        final Time time = new Time(date.getTime());
+        final String sql1 = "SELECT temp FROM temp_chauff WHERE start_hour < ?;";
+        final String sql2 = "SELECT temp FROM temp_chauff WHERE start_hour < ? AND end_hour > ?;";
+        final SimpleDateFormat sdf = new SimpleDateFormat("HHmmss");
+        boolean secondParameter = false;
+        try {
+            final Date dateCompare = sdf.parse("230000");
+            if (time.before(dateCompare)) {
+                secondParameter = true;
+            }
+        } catch (final ParseException e) {
+            throw new SQLException("Parse de la date de comparaison échoué");
+        }
+        if (!secondParameter) {
+            try (Connection connection = DataSource.getInstance().getConnection();
+                 PreparedStatement statement = connection.prepareStatement(sql1)) {
+                Integer result = null;
+
+                statement.setTime(1, time);
+
+                try (ResultSet rs = statement.executeQuery()) {
+                    while (rs.next()) {
+                        result = rs.getInt("temp");
+                    }
+                }
+                if (result == null) {
+                    throw new SQLException(NO_COMMAND_PRESENT);
+                }
+
+                return result;
+            }
+        } else {
+
+            try (Connection connection = DataSource.getInstance().getConnection();
+                 PreparedStatement statement = connection.prepareStatement(sql2)) {
+                Integer result = null;
+
+                statement.setTime(1, time);
+                statement.setTime(2, time);
+                try (ResultSet rs = statement.executeQuery()) {
+                    while (rs.next()) {
+                        result = rs.getInt("temp");
+                    }
+                }
+                if (result == null) {
+                    throw new SQLException(NO_COMMAND_PRESENT);
+                }
+
+                return result;
+            }
+        }
+    }
+
+    @Override
+    public Integer getTempForStartHour(final Date startHour) throws SQLException {
+        LOGGER.trace("Jdbc.getTempForStartHour");
+        final String sql = "SELECT temp FROM temp_chauff WHERE start_hour = ? ";
+        try (Connection connection = DataSource.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             Integer result = null;
 
-            final String sql = "SELECT temp FROM temp_chauff ORDER BY ID DESC LIMIT 1";
-
-            try (ResultSet rs = statement.executeQuery(sql)) {
+            final Time time = new Time(startHour.getTime());
+            statement.setTime(1, time);
+            try (ResultSet rs = statement.executeQuery()) {
                 while (rs.next()) {
                     result = rs.getInt("temp");
                 }
             }
             if (result == null) {
-                throw new SQLException("Aucune valeur de commande déja présente");
+                throw new SQLException(NO_COMMAND_PRESENT);
+            }
+
+            return result;
+        }
+    }
+
+    @Override
+    public Map<Date, Integer> getTempMap() throws SQLException {
+        LOGGER.trace("Jdbc.getTempForStartHour");
+        final String sql = "SELECT start_hour, temp FROM temp_chauff WHERE start_hour IS NOT NULL ";
+        try (Connection connection = DataSource.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            final Map<Date, Integer> result = new HashMap<>();
+
+            try (ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) {
+                    result.put(rs.getTime("start_hour"), rs.getInt("temp"));
+                }
+            }
+            if (result.isEmpty()) {
+                throw new SQLException(NO_COMMAND_PRESENT);
             }
 
             return result;
@@ -114,19 +270,22 @@ public class Jdbc implements IJdbc {
         statement.executeUpdate(sql);
     }
 
-    private void saveEdfIndex(final Integer index, final Integer type, final Statement statement) throws SQLException {
+    private void saveEdfIndex(final Integer index, final Integer type, final Statement statement) throws
+            SQLException {
         final String sql = "INSERT INTO edfindex (value, type)VALUES (" + index.toString() + ", " + type.toString() + ")";
         statement.executeUpdate(sql);
     }
 
-    private void saveTemperature(final Float temperature, final Statement statement, final Integer type) throws SQLException {
+    private void saveTemperature(final Float temperature, final Statement statement, final Integer type) throws
+            SQLException {
         final String sql = "INSERT INTO temperature (value, type)VALUES ("
                 + temperature.toString() + ", "
                 + type.toString() + ")";
         statement.executeUpdate(sql);
     }
 
-    private void savePression(final Float pressionRel, final Float pressionAbs, final Statement statement) throws SQLException {
+    private void savePression(final Float pressionRel, final Float pressionAbs, final Statement statement) throws
+            SQLException {
         final String sql = "INSERT INTO pression (valueabs, valuerel)VALUES ("
                 + pressionAbs.toString() + ", "
                 + pressionRel.toString() + ")";
@@ -144,6 +303,17 @@ public class Jdbc implements IJdbc {
         try (ResultSet rs = statement.executeQuery(sql)) {
             while (rs.next()) {
                 currentMode = rs.getBoolean("onoff");
+            }
+        }
+        return currentMode;
+    }
+
+    private Boolean getHourModeChauffageInternal(final Statement statement) throws SQLException {
+        final String sql = "SELECT hourmode FROM mode_chauff ORDER BY ID DESC LIMIT 1";
+        Boolean currentMode = null;
+        try (ResultSet rs = statement.executeQuery(sql)) {
+            while (rs.next()) {
+                currentMode = rs.getBoolean("hourmode");
             }
         }
         return currentMode;
