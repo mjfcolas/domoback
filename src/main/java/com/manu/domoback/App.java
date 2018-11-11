@@ -19,7 +19,7 @@ class App {
     private static final IMeteo meteo = new Meteo(arduinoReader, DependanceFactory.getJdbc(), "METEO");
     private static final IMeteo meteo2 = new Meteo(arduinoReader, DependanceFactory.getJdbc(), "METEO2");
     private static final IMeteo meteo3 = new Meteo(arduinoReader, DependanceFactory.getJdbc(), "METEO3");
-    private static final IChauffage chauffage = new Chauffage(arduinoReader, DependanceFactory.getJdbc());
+    private static final IChauffage chauffage = new Chauffage(arduinoReader, DependanceFactory.getJdbc(), 1000);
     private static final IFeature teleinfo = new Teleinfo(DependanceFactory.getJdbc());
     private static final IFeatureWrapper featureWrapper = new FeatureWrapper(meteo, chauffage, teleinfo);
 

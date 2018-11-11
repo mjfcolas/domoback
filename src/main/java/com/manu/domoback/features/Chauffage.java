@@ -25,10 +25,12 @@ public class Chauffage extends AbstractFeature implements IChauffage {
     private final IArduinoReader arduinoReader;
     private final IChauffageInfo chauffageInfo = new ChauffageInfo();
     private int loopsSinceLastSync = 0;
+    private final int loopsBeforeSync;
     private boolean syncRunning = false;
 
-    public Chauffage(final IArduinoReader arduinoReader, final IJdbc jdbc) {
+    public Chauffage(final IArduinoReader arduinoReader, final IJdbc jdbc, final int loopsBeforeSync) {
         super(jdbc);
+        this.loopsBeforeSync = loopsBeforeSync;
         this.arduinoReader = arduinoReader;
 
     }
@@ -62,7 +64,7 @@ public class Chauffage extends AbstractFeature implements IChauffage {
 
                 this.loopsSinceLastSync++;
                 //Tous les 1000 tours de boucle, on considère qu'il faut resynchroniser l'état du chauffage
-                if (this.loopsSinceLastSync > 1000) {
+                if (this.loopsSinceLastSync > this.loopsBeforeSync) {
                     LOGGER.debug("Annulation synchro");
                     this.loopsSinceLastSync = 0;
                     this.syncRunning = false;
@@ -106,7 +108,7 @@ public class Chauffage extends AbstractFeature implements IChauffage {
         LOGGER.trace("Chauffage.sendCommand");
         final UnsureBoolean potentialCommand = this.getCommand();
         final Boolean chauffageState = this.chauffageInfo.getChauffageState();
-        LOGGER.trace("Send command");
+        LOGGER.trace("Send command {} {} ", potentialCommand, chauffageState);
         if (potentialCommand.isSure() && chauffageState != null && chauffageState != potentialCommand.state()) {
             this.arduinoReader.writeData("CHAUFF " + (potentialCommand.state() ? "1" : "0"));
             this.chauffageInfo.setChauffageState(potentialCommand.state());
@@ -167,7 +169,10 @@ public class Chauffage extends AbstractFeature implements IChauffage {
         final Boolean newHourMode = this.jdbc.getHourModeChauffage();
         this.chauffageInfo.setChauffageHourMode(newHourMode);
         //Mode horaire: il faut récupérer une autre température de commande
-        final Integer newTemp = this.jdbc.getCurrentTemp(this.chauffageInfo.getChauffageHourMode());
+        final boolean hourMode = this.chauffageInfo.getChauffageHourMode();
+        LOGGER.trace("HourMode {}", hourMode);
+        final Integer newTemp = this.jdbc.getCurrentTemp(hourMode);
+        LOGGER.trace("newTemp {}", newTemp);
         this.chauffageInfo.setChauffageTemp(newTemp);
         this.chauffageInfo.setTempByHoursMap(this.jdbc.getTempMap());
 

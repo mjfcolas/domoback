@@ -37,7 +37,7 @@ public class ChauffageTest extends TestCase {
 
     @Before
     public void before() {
-        this.chauffage = new Chauffage(this.arduinoReader, this.jdbc);
+        this.chauffage = new Chauffage(this.arduinoReader, this.jdbc, 1);
     }
 
     /**
@@ -156,6 +156,25 @@ public class ChauffageTest extends TestCase {
         this.chauffage.run();
         final IChauffageInfo result = this.chauffage.getChauffageInfo();
         assertEquals(new Boolean(false), result.getChauffageState());
+    }
+
+    /**
+     * Test synchronisation chauffage
+     *
+     * @throws SQLException
+     */
+    @Test
+    public void testRun6() throws SQLException {
+        Mockito.when(this.jdbc.getCommandeChauffage()).thenReturn(false);
+        Mockito.when(this.jdbc.getCurrentTemp(false)).thenReturn(20);
+        Mockito.when(this.arduinoReader.isReady()).thenReturn(true);
+        final ArduinoInfos arduinoResult = new ArduinoInfos();
+        arduinoResult.setChauffageState(false);
+        arduinoResult.setTemperature(new Float(18));
+        Mockito.when(this.arduinoReader.getInfos()).thenReturn(arduinoResult);
+        for (int i = 0; i < 3; i++) {
+            this.chauffage.run();
+        }
     }
 
     @Test

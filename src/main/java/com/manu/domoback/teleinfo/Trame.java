@@ -66,21 +66,6 @@ public class Trame {
         return startIndex;
     }
 
-    public String getTrameTxt() {
-        final StringBuilder output = new StringBuilder();
-        if (this.inError) {
-            output.append("ERROR  :");
-        } else {
-            output.append("SUCCESS:");
-        }
-        for (final Character character : this.caracteres) {
-            if (character > 0x1F) {
-                output.append(character);
-            }
-        }
-        return output.toString();
-    }
-
     private void addInfo(final String key, final String value) {
         if (!this.infos.containsKey(key)) {
             this.infos.put(key, value);

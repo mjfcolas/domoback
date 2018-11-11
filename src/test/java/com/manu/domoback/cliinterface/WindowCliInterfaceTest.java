@@ -26,7 +26,7 @@ public class WindowCliInterfaceTest extends TestCase {
     @Mock
     private final IMeteo meteo = new Meteo(this.arduinoReader, DependanceFactory.getJdbc(), "METEO");
     @Mock
-    private final IChauffage chauffage = new Chauffage(this.arduinoReader, DependanceFactory.getJdbc());
+    private final IChauffage chauffage = new Chauffage(this.arduinoReader, DependanceFactory.getJdbc(), 1000);
     @Mock
     private final IFeature teleinfo = new Teleinfo(DependanceFactory.getJdbc());
     @Mock

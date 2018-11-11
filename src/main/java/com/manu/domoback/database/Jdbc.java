@@ -169,55 +169,48 @@ public class Jdbc implements IJdbc {
     public Integer getTemp(final Date date) throws SQLException {
         LOGGER.trace("Jdbc.getTemp");
         final Time time = new Time(date.getTime());
-        final String sql1 = "SELECT temp FROM temp_chauff WHERE start_hour < ?;";
-        final String sql2 = "SELECT temp FROM temp_chauff WHERE start_hour < ? AND end_hour > ?;";
         final SimpleDateFormat sdf = new SimpleDateFormat("HHmmss");
-        boolean secondParameter = false;
+        boolean beforeElevenPm = false;
+        final Time midnight;
         try {
             final Date dateCompare = sdf.parse("230000");
-            if (time.before(dateCompare)) {
-                secondParameter = true;
+            final Date curHour = sdf.parse(sdf.format(date));
+            midnight = new Time(sdf.parse("000000").getTime());
+            LOGGER.trace("CurHour {} - dateCompare {}", curHour, dateCompare);
+            if (curHour.before(dateCompare)) {
+                LOGGER.trace("SecondParameter true");
+                beforeElevenPm = true;
             }
         } catch (final ParseException e) {
             throw new SQLException("Parse de la date de comparaison échoué");
         }
-        if (!secondParameter) {
-            try (Connection connection = DataSource.getInstance().getConnection();
-                 PreparedStatement statement = connection.prepareStatement(sql1)) {
-                Integer result = null;
-
-                statement.setTime(1, time);
-
-                try (ResultSet rs = statement.executeQuery()) {
-                    while (rs.next()) {
-                        result = rs.getInt("temp");
-                    }
-                }
-                if (result == null) {
-                    throw new SQLException(NO_COMMAND_PRESENT);
-                }
-
-                return result;
-            }
+        final String sql;
+        if (beforeElevenPm) {
+            sql = "SELECT temp FROM temp_chauff WHERE start_hour < ? AND end_hour >= ?;";
         } else {
+            sql = "SELECT temp FROM temp_chauff WHERE start_hour < ? AND end_hour = ?;";
+        }
+        boolean gotOneResult = false;
+        try (Connection connection = DataSource.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            Integer result = null;
 
-            try (Connection connection = DataSource.getInstance().getConnection();
-                 PreparedStatement statement = connection.prepareStatement(sql2)) {
-                Integer result = null;
-
-                statement.setTime(1, time);
-                statement.setTime(2, time);
-                try (ResultSet rs = statement.executeQuery()) {
-                    while (rs.next()) {
-                        result = rs.getInt("temp");
+            statement.setTime(1, time);
+            statement.setTime(2, beforeElevenPm ? time : midnight);
+            try (ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) {
+                    if (gotOneResult) {
+                        throw new SQLException("Plusieurs résultats de température");
                     }
+                    result = rs.getInt("temp");
+                    gotOneResult = true;
                 }
-                if (result == null) {
-                    throw new SQLException(NO_COMMAND_PRESENT);
-                }
-
-                return result;
             }
+            if (result == null) {
+                throw new SQLException(NO_COMMAND_PRESENT);
+            }
+
+            return result;
         }
     }
 

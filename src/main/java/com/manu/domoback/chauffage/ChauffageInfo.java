@@ -11,7 +11,7 @@ public class ChauffageInfo implements IChauffageInfo {
     private Boolean chauffageStateKnown = false;
     private Boolean chauffageModeAttr;
     private Boolean chauffaHourgeModeAttr;
-    private Integer chauffageTempAttr;
+    private Integer chauffageTemp;
 
     private Map<Date, Integer> tempByHoursMap = new HashMap<>();
 
@@ -40,15 +40,12 @@ public class ChauffageInfo implements IChauffageInfo {
 
     @Override
     public Integer getChauffageTemp() {
-        return this.chauffageTempAttr;
+        return this.chauffageTemp;
     }
 
     @Override
     public void setChauffageTemp(final Integer chauffageTemp) {
-        if (this.chauffageTempAttr == null || !this.chauffageTempAttr.equals(chauffageTemp)) {
-            this.chauffageTempAttr = chauffageTemp;
-        }
-        this.chauffageTempAttr = chauffageTemp;
+        this.chauffageTemp = chauffageTemp;
     }
 
     @Override
