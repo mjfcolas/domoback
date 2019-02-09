@@ -9,8 +9,13 @@ meteo.asktime=60
 
 chauffage.asktime=1
 
-
 jdbc.driver=org.postgresql.Driver
 jdbc.url=jdbc:postgresql://IP/BDD
 jdbc.username=user
 jdbc.password=password
+
+mode.meteo1.activated=1
+mode.meteo2.activated=1
+mode.teleinfo.activated=1
+mode.chauffage.activated=1
+

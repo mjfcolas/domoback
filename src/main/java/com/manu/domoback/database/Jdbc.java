@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -136,6 +137,18 @@ public class Jdbc implements IJdbc {
             LOGGER.error(Bundles.messages().getProperty(Constants.KEY_GENERIC_ERROR), ex);
         }
 
+    }
+
+    @Override
+    public void saveSerialEvent(final LocalDateTime date, final String errorType, final boolean isError) throws SQLException {
+        final String sql = "INSERT INTO serial_event (date, error_type, success) VALUES (?, ?, ?)";
+        try (Connection connection = DataSource.getInstance().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setTimestamp(1, Timestamp.valueOf(date));
+            preparedStatement.setString(2, errorType);
+            preparedStatement.setBoolean(3, !isError);
+            preparedStatement.executeUpdate();
+        }
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.manu.domoback.database;
 
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Map;
 
@@ -110,4 +111,12 @@ public interface IJdbc {
      * @throws SQLException
      */
     Map<Date, Integer> getTempMap() throws SQLException;
+
+    /**
+     * Insert a date into the error table
+     *
+     * @param date
+     * @throws SQLException
+     */
+    void saveSerialEvent(final LocalDateTime date, String errorType, boolean isError) throws SQLException;
 }

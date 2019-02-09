@@ -25,6 +25,9 @@ public class ArduinoReader implements SerialPortEventListener, IArduinoReader {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ArduinoReader.class.getName());
 
+    private static final String ERROR_MESSAGE = "NO_ANSWER";
+    private static final String RECEPTION_PREFIX = "RECE";
+
     private final ArduinoInfos infos = new ArduinoInfos();
     private boolean isReady = false;
 
@@ -92,11 +95,12 @@ public class ArduinoReader implements SerialPortEventListener, IArduinoReader {
             try {
                 String inputLine;
                 while ((inputLine = this.input.readLine()) != null) {
-
                     LOGGER.info("FRA {}", inputLine);
                     final String[] info = inputLine.split(" ");
-
-                    if (info.length > 1) {
+                    if (this.logSerialEvent(info)) {
+                        continue;
+                    }
+                    if (info.length > 2 && RECEPTION_PREFIX.equals(info[0])) {
                         this.fillInfos(info);
                     }
                 }
@@ -106,23 +110,37 @@ public class ArduinoReader implements SerialPortEventListener, IArduinoReader {
         }
     }
 
+    private boolean logSerialEvent(final String[] info) {
+        boolean error = false;
+        if (info.length > 1 && RECEPTION_PREFIX.equals(info[0])) {
+            final String actionType = info[1];
+            if (info.length > 2 && ERROR_MESSAGE.equals(info[2])) {
+                error = true;
+            }
+            if (ArduinoKeys.allValues().contains(actionType)) {
+                this.infos.addSerialEvent(actionType, error);
+            }
+        }
+        return error;
+    }
+
     private void fillInfos(final String[] info) {
-        if (InfoKeys.T.name().equals(info[0])) {
-            this.infos.setTemperature(Float.parseFloat(info[1]));
-        } else if (InfoKeys.T2.name().equals(info[0])) {
-            this.infos.setTemperature2(Float.parseFloat(info[1]));
-        } else if (InfoKeys.T3.name().equals(info[0])) {
-            this.infos.setTemperature3(Float.parseFloat(info[1]));
-        } else if (InfoKeys.AP.name().equals(info[0])) {
-            this.infos.setPressionAbsolue(Float.parseFloat(info[1]));
-        } else if (InfoKeys.RP.name().equals(info[0])) {
-            this.infos.setPressionRelative(Float.parseFloat(info[1]));
-        } else if (InfoKeys.HH.name().equals(info[0])) {
-            this.infos.setHygrometrie(Float.parseFloat(info[1]));
-        } else if (InfoKeys.MK.name().equals(info[0])) {
-            this.infos.setKey(info[1]);
-        } else if (InfoKeys.D.name().equals(info[0])) {
-            this.infos.setChauffageState("1".equals(info[1]));
+        if (InfoKeys.T.name().equals(info[1])) {
+            this.infos.setTemperature(Float.parseFloat(info[2]));
+        } else if (InfoKeys.T2.name().equals(info[1])) {
+            this.infos.setTemperature2(Float.parseFloat(info[2]));
+        } else if (InfoKeys.T3.name().equals(info[1])) {
+            this.infos.setTemperature3(Float.parseFloat(info[2]));
+        } else if (InfoKeys.AP.name().equals(info[1])) {
+            this.infos.setPressionAbsolue(Float.parseFloat(info[2]));
+        } else if (InfoKeys.RP.name().equals(info[1])) {
+            this.infos.setPressionRelative(Float.parseFloat(info[2]));
+        } else if (InfoKeys.HH.name().equals(info[1])) {
+            this.infos.setHygrometrie(Float.parseFloat(info[2]));
+        } else if (InfoKeys.MK.name().equals(info[1])) {
+            this.infos.setKey(info[2]);
+        } else if (InfoKeys.D.name().equals(info[1])) {
+            this.infos.setChauffageState("1".equals(info[2]));
         }
     }
 

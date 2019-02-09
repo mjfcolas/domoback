@@ -324,23 +324,25 @@ public class SerialPortMock extends SerialPort {
         }
         final StringBuilder sb = new StringBuilder();
         final String systemPropertyLineSeparator = "line.separator";
-        sb.append("T 15");
+        sb.append("RECE T NO_ANSWER");
         sb.append(System.getProperty(systemPropertyLineSeparator));
-        sb.append("T2 16");
+        sb.append("RECE T 15");
         sb.append(System.getProperty(systemPropertyLineSeparator));
-        sb.append("T3 17");
+        sb.append("RECE T2 16");
         sb.append(System.getProperty(systemPropertyLineSeparator));
-        sb.append("AP 1000");
+        sb.append("RECE T3 17");
         sb.append(System.getProperty(systemPropertyLineSeparator));
-        sb.append("RP 1010");
+        sb.append("RECE AP 1000");
         sb.append(System.getProperty(systemPropertyLineSeparator));
-        sb.append("HH 25");
+        sb.append("RECE RP 1010");
         sb.append(System.getProperty(systemPropertyLineSeparator));
-        sb.append("MK 1");
+        sb.append("RECE HH 25");
         sb.append(System.getProperty(systemPropertyLineSeparator));
-        sb.append("D 0");
+        sb.append("RECE MK 1");
         sb.append(System.getProperty(systemPropertyLineSeparator));
-        sb.append("NOK 0");
+        sb.append("RECE D 0");
+        sb.append(System.getProperty(systemPropertyLineSeparator));
+        sb.append("RECE NOK 0");
         sb.append(System.getProperty(systemPropertyLineSeparator));
         return new ByteArrayInputStream(sb.toString().getBytes());
     }

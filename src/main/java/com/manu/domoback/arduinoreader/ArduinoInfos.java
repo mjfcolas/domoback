@@ -1,6 +1,17 @@
 package com.manu.domoback.arduinoreader;
 
+import com.manu.domoback.common.DependanceFactory;
+import com.manu.domoback.database.IJdbc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+
 public class ArduinoInfos implements IExternalInfos {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ArduinoInfos.class.getName());
+    private final IJdbc jdbc = DependanceFactory.getJdbc();
 
     private String key;
     private Float temperature;
@@ -70,7 +81,7 @@ public class ArduinoInfos implements IExternalInfos {
         return this.key;
     }
 
-    public void setKey(final String key) {
+    void setKey(final String key) {
         this.key = key;
     }
 
@@ -83,5 +94,14 @@ public class ArduinoInfos implements IExternalInfos {
 
     public void setChauffageState(final Boolean chauffageState) {
         this.chauffageState = chauffageState;
+    }
+
+    void addSerialEvent(final String errorType, final boolean isError) {
+        final LocalDateTime date = LocalDateTime.now();
+        try {
+            this.jdbc.saveSerialEvent(date, errorType, isError);
+        } catch (final SQLException e) {
+            LOGGER.error("ArduinoInfos.errorType", e);
+        }
     }
 }

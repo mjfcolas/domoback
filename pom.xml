@@ -4,7 +4,7 @@
 
     <groupId>com.manu.domoback</groupId>
     <artifactId>domoback</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <packaging>jar</packaging>
 
     <name>Domo Back</name>
@@ -239,7 +239,7 @@
         <dependency>
             <groupId>com.mchange</groupId>
             <artifactId>c3p0</artifactId>
-            <version>0.9.5.2</version>
+            <version>0.9.5.3</version>
         </dependency>
     </dependencies>
 </project>

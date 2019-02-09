@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Scanner;
 
@@ -199,5 +200,14 @@ public class JdbcTest extends TestCase {
         this.initializeData("modeChauff.sql");
         this.jdbc.switchHourModeChauffage();
         assertEquals((Boolean) false, this.jdbc.getHourModeChauffage());
+    }
+
+    @Test
+    public void testSaveError() {
+        try {
+            this.jdbc.saveSerialEvent(LocalDateTime.now(), "T", true);
+        } catch (final SQLException e) {
+            fail();
+        }
     }
 }
