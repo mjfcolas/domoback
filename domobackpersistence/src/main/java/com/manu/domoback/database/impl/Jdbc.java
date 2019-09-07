@@ -21,6 +21,11 @@ public class Jdbc implements PersistenceApi {
     private static final String NO_COMMAND_PRESENT = "Aucune valeur de commande présente";
 
     @Override
+    public String identify(){
+        return this.getClass().getSimpleName();
+    }
+
+    @Override
     public Boolean getCommandeChauffage() throws SQLException {
         LOGGER.trace("Jdbc.getCommandeChauffage");
         try (Connection connection = DataSource.getInstance().getConnection();

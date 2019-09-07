@@ -1,16 +1,17 @@
 package com.manu.domoback.test.features;
 
 import com.manu.domoback.arduinoreader.ArduinoInfos;
-import com.manu.domoback.arduinoreader.IArduinoReader;
-import com.manu.domoback.features.chauffage.IChauffageInfo;
+import com.manu.domoback.arduinoreader.ExternalDataController;
 import com.manu.domoback.features.Chauffage;
 import com.manu.domoback.features.api.enums.INFOS;
+import com.manu.domoback.features.chauffage.IChauffageInfo;
 import com.manu.domoback.persistence.api.PersistenceApi;
 import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -25,11 +26,12 @@ import java.util.Map;
 @RunWith(MockitoJUnitRunner.class)
 public class ChauffageTest extends TestCase {
 
-    private Chauffage chauffage = null;
+    @InjectMocks
+    private Chauffage chauffage = new Chauffage();
     @Mock
-    private final IArduinoReader arduinoReader = null;
+    private ExternalDataController arduinoReader;
     @Mock
-    private final PersistenceApi jdbc = null;
+    private PersistenceApi jdbc;
 
     @BeforeClass
     public static void beforeClass() {
@@ -38,7 +40,7 @@ public class ChauffageTest extends TestCase {
 
     @Before
     public void before() {
-        this.chauffage = new Chauffage(this.arduinoReader, this.jdbc, 1);
+        this.chauffage.init(this.arduinoReader);
     }
 
     /**

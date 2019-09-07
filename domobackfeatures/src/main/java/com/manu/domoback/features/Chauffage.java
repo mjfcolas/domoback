@@ -1,13 +1,12 @@
 package com.manu.domoback.features;
 
-import com.manu.domoback.arduinoreader.IArduinoReader;
+import com.manu.domoback.arduinoreader.ExternalDataController;
 import com.manu.domoback.arduinoreader.IExternalInfos;
-import com.manu.domoback.features.api.IChauffage;
+import com.manu.domoback.common.UnsureBoolean;
+import com.manu.domoback.features.api.features.IChauffage;
+import com.manu.domoback.features.api.enums.INFOS;
 import com.manu.domoback.features.chauffage.ChauffageInfo;
 import com.manu.domoback.features.chauffage.IChauffageInfo;
-import com.manu.domoback.common.UnsureBoolean;
-import com.manu.domoback.features.api.enums.INFOS;
-import com.manu.domoback.persistence.api.PersistenceApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,17 +22,19 @@ public class Chauffage extends AbstractFeature implements IChauffage {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Chauffage.class.getName());
 
-    private final IArduinoReader arduinoReader;
+    private ExternalDataController arduinoReader;
     private final IChauffageInfo chauffageInfo = new ChauffageInfo();
     private int loopsSinceLastSync = 0;
-    private final int loopsBeforeSync;
+    private static final int LOOPS_BEFORE_SYNC = 1000;
     private boolean syncRunning = false;
 
-    public Chauffage(final IArduinoReader arduinoReader, final PersistenceApi jdbc, final int loopsBeforeSync) {
-        super(jdbc);
-        this.loopsBeforeSync = loopsBeforeSync;
-        this.arduinoReader = arduinoReader;
+    public Chauffage() {
+        super();
+    }
 
+    @Override
+    public void init(final ExternalDataController arduinoReader) {
+        this.arduinoReader = arduinoReader;
     }
 
     @Override
@@ -65,7 +66,7 @@ public class Chauffage extends AbstractFeature implements IChauffage {
 
                 this.loopsSinceLastSync++;
                 //Tous les 1000 tours de boucle, on considère qu'il faut resynchroniser l'état du chauffage
-                if (this.loopsSinceLastSync > this.loopsBeforeSync) {
+                if (this.loopsSinceLastSync > Chauffage.LOOPS_BEFORE_SYNC) {
                     LOGGER.debug("Annulation synchro");
                     this.loopsSinceLastSync = 0;
                     this.syncRunning = false;

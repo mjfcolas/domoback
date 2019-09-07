@@ -1,9 +1,9 @@
 package com.manu.domoback.test.features;
 
 import com.manu.domoback.arduinoreader.ArduinoInfos;
-import com.manu.domoback.arduinoreader.IArduinoReader;
-import com.manu.domoback.features.api.enums.INFOS;
+import com.manu.domoback.arduinoreader.ExternalDataController;
 import com.manu.domoback.features.Meteo;
+import com.manu.domoback.features.api.enums.INFOS;
 import com.manu.domoback.persistence.api.PersistenceApi;
 import junit.framework.TestCase;
 import org.junit.Before;
@@ -21,7 +21,7 @@ public class MeteoTest extends TestCase {
 
     private Meteo meteo = null;
     @Mock
-    private final IArduinoReader arduinoReader = null;
+    private final ExternalDataController arduinoReader = null;
     @Mock
     private final PersistenceApi jdbc = null;
     private static ArduinoInfos arduinoResult = null;
@@ -39,7 +39,8 @@ public class MeteoTest extends TestCase {
 
     @Before
     public void before() {
-        this.meteo = new Meteo(this.arduinoReader, this.jdbc, "TST");
+        this.meteo = new Meteo();
+        this.meteo.init(this.arduinoReader, "TST");
     }
 
     /**
@@ -74,7 +75,8 @@ public class MeteoTest extends TestCase {
     }
 
     private void runAndSave(final String key) {
-        this.meteo = new Meteo(this.arduinoReader, this.jdbc, key);
+        this.meteo = new Meteo();
+        this.meteo.init(this.arduinoReader, key);
         this.meteo.run();
         this.meteo.save();
     }

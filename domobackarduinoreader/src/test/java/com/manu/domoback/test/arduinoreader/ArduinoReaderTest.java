@@ -1,5 +1,6 @@
 package com.manu.domoback.test.arduinoreader;
 
+import com.manu.domoback.arduinoreader.ArduinoInfos;
 import com.manu.domoback.arduinoreader.ArduinoReader;
 import com.manu.domoback.serial.ICommPortWrapper;
 import com.manu.domoback.serial.exceptions.PortNotFoundException;
@@ -24,6 +25,8 @@ public class ArduinoReaderTest extends TestCase {
     private ICommPortWrapper port;
     @Mock
     private SerialPortEvent spe;
+    @Mock
+    private ArduinoInfos arduinoInfos;
 
     @Test
     public void testInitializeErrorPortInUse() {

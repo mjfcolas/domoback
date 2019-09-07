@@ -1,6 +1,6 @@
-package com.manu.domoback.features;
+package com.manu.domoback.features.api;
 
-import com.manu.domoback.features.api.IFeature;
+import com.manu.domoback.features.api.features.IFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,7 +8,7 @@ import java.util.TimerTask;
 
 public class FeatureRunner extends TimerTask {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractFeature.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureRunner.class.getName());
 
     private IFeature feature;
 

@@ -3,7 +3,6 @@ package com.manu.domoback.features;
 import com.manu.domoback.conf.CONFKEYS;
 import com.manu.domoback.conf.DomobackConf;
 import com.manu.domoback.features.api.enums.INFOS;
-import com.manu.domoback.persistence.api.PersistenceApi;
 import com.manu.domoback.teleinfo.ProcessSignal;
 import com.manu.domoback.teleinfo.Trame;
 import org.slf4j.Logger;
@@ -23,8 +22,8 @@ public class Teleinfo extends AbstractFeature {
             "1".equals(DomobackConf.get(CONFKEYS.TELEINFO_PROCESSRECORD)));
     private Map<String, String> trameInfos = new HashMap<>();
 
-    public Teleinfo(final PersistenceApi jdbc) {
-        super(jdbc);
+    public Teleinfo() {
+        super();
     }
 
     @Override

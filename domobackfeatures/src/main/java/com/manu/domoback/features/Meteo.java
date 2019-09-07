@@ -1,10 +1,9 @@
 package com.manu.domoback.features;
 
-import com.manu.domoback.arduinoreader.IArduinoReader;
+import com.manu.domoback.arduinoreader.ExternalDataController;
 import com.manu.domoback.arduinoreader.IExternalInfos;
-import com.manu.domoback.features.api.IMeteo;
+import com.manu.domoback.features.api.features.IMeteo;
 import com.manu.domoback.features.api.enums.INFOS;
-import com.manu.domoback.persistence.api.PersistenceApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,12 +14,16 @@ public class Meteo extends AbstractFeature implements IMeteo {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Meteo.class.getName());
 
-    private final IArduinoReader arduinoReader;
+    private ExternalDataController arduinoReader;
     private IExternalInfos meteoInfos;
-    private final String key;
+    private String key;
 
-    public Meteo(final IArduinoReader arduinoReader, final PersistenceApi jdbc, final String key) {
-        super(jdbc);
+    public Meteo() {
+        super();
+    }
+
+    @Override
+    public void init(final ExternalDataController arduinoReader, final String key) {
         this.name = key;
         this.key = key;
         this.arduinoReader = arduinoReader;
@@ -36,11 +39,6 @@ public class Meteo extends AbstractFeature implements IMeteo {
             this.meteoInfos = this.arduinoReader.getInfos();
             this.fireDataChanged();
         }
-    }
-
-    @Override
-    public IExternalInfos getRawInfos() {
-        return this.meteoInfos;
     }
 
     @Override

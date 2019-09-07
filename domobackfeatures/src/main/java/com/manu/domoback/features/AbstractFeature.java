@@ -1,8 +1,9 @@
 package com.manu.domoback.features;
 
-import com.manu.domoback.features.api.IFeature;
+import com.manu.domoback.features.api.features.IFeature;
 import com.manu.domoback.features.api.listeners.DataListener;
 import com.manu.domoback.persistence.api.PersistenceApi;
+import com.manu.domoback.persistence.api.factory.JdbcFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +13,7 @@ public abstract class AbstractFeature implements IFeature {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractFeature.class.getName());
 
-    protected PersistenceApi jdbc;
+    protected PersistenceApi jdbc = JdbcFactory.getInstance();
     protected String name;
 
     private final EventListenerList listeners = new EventListenerList();
@@ -43,8 +44,10 @@ public abstract class AbstractFeature implements IFeature {
         return this.name;
     }
 
-    public AbstractFeature(final PersistenceApi jdbc) {
-        this.jdbc = jdbc;
+    public AbstractFeature() {
     }
 
+    public void setJdbc(PersistenceApi jdbc){
+        this.jdbc = jdbc;
+    }
 }

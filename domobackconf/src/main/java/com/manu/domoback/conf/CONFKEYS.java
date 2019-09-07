@@ -14,8 +14,11 @@ public enum CONFKEYS {
 
     JDBC_DRIVER("jdbc.driver"),
     JDBC_URL("jdbc.url"),
+    JDBC_TEST_URL("jdbc.test.url"),
     JDBC_USERNAME("jdbc.username"),
     JDBC_PASSWORD("jdbc.password"),
+
+    WIFI_CONNECTER("wifi.connecter.path"),
 
     MODE_METEO1_ACTIVATED("mode.meteo1.activated"),
     MODE_METEO2_ACTIVATED("mode.meteo2.activated"),

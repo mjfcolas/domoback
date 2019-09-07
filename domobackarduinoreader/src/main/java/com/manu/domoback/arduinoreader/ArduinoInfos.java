@@ -1,6 +1,6 @@
 package com.manu.domoback.arduinoreader;
 
-import com.manu.domoback.database.factory.JdbcFactory;
+import com.manu.domoback.persistence.api.factory.JdbcFactory;
 import com.manu.domoback.persistence.api.PersistenceApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public class ArduinoInfos implements IExternalInfos {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ArduinoInfos.class.getName());
-    private final PersistenceApi jdbc = JdbcFactory.getInstance();
+    private PersistenceApi jdbc = JdbcFactory.getInstance();
 
     private String key;
     private Float temperature;
@@ -96,7 +96,7 @@ public class ArduinoInfos implements IExternalInfos {
         this.chauffageState = chauffageState;
     }
 
-    void addSerialEvent(final String errorType, final boolean isError) {
+    public void addSerialEvent(final String errorType, final boolean isError) {
         final LocalDateTime date = LocalDateTime.now();
         try {
             this.jdbc.saveSerialEvent(date, errorType, isError);

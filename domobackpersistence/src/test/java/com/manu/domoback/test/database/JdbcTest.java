@@ -1,7 +1,8 @@
 package com.manu.domoback.test.database;
 
 import com.manu.domoback.database.datasource.DataSource;
-import com.manu.domoback.database.factory.JdbcFactory;
+import com.manu.domoback.database.impl.Jdbc;
+import com.manu.domoback.persistence.api.factory.JdbcFactory;
 import com.manu.domoback.exceptions.BusinessException;
 import com.manu.domoback.persistence.api.PersistenceApi;
 import junit.framework.TestCase;
@@ -25,7 +26,7 @@ import java.util.Scanner;
 @RunWith(MockitoJUnitRunner.class)
 public class JdbcTest extends TestCase {
     private static final Logger LOGGER = LoggerFactory.getLogger(JdbcTest.class.getName());
-    private final PersistenceApi jdbc = JdbcFactory.getInstance();
+    private final PersistenceApi jdbc = new Jdbc();
 
     @Before
     public void before() {

@@ -3,14 +3,16 @@ package com.manu.domoback.test.cliinterface;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import com.manu.domoback.arduinoreader.ArduinoReader;
-import com.manu.domoback.arduinoreader.IArduinoReader;
+import com.manu.domoback.arduinoreader.ExternalDataController;
 import com.manu.domoback.cliinterface.display.WindowCliInterface;
-import com.manu.domoback.database.factory.JdbcFactory;
-import com.manu.domoback.features.*;
-import com.manu.domoback.features.api.IChauffage;
-import com.manu.domoback.features.api.IFeature;
+import com.manu.domoback.features.api.features.IMeteo;
+import com.manu.domoback.features.Chauffage;
+import com.manu.domoback.features.api.FeatureWrapper;
+import com.manu.domoback.features.Meteo;
+import com.manu.domoback.features.Teleinfo;
+import com.manu.domoback.features.api.features.IChauffage;
+import com.manu.domoback.features.api.features.IFeature;
 import com.manu.domoback.features.api.IFeatureWrapper;
-import com.manu.domoback.features.api.IMeteo;
 import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,19 +29,21 @@ public class WindowCliInterfaceTest extends TestCase {
 
     private WindowCliInterface gui = null;
     @Mock
-    private final IArduinoReader arduinoReader = new ArduinoReader();
+    private final ExternalDataController arduinoReader = new ArduinoReader();
     @Mock
-    private final IMeteo meteo = new Meteo(this.arduinoReader, JdbcFactory.getInstance(), "METEO");
+    private final IMeteo meteo = new Meteo();
     @Mock
-    private final IChauffage chauffage = new Chauffage(this.arduinoReader, JdbcFactory.getInstance(), 1000);
+    private final IChauffage chauffage = new Chauffage();
     @Mock
-    private final IFeature teleinfo = new Teleinfo(JdbcFactory.getInstance());
+    private final IFeature teleinfo = new Teleinfo();
     @Mock
     private final IFeatureWrapper featureWrapper = new FeatureWrapper(this.meteo, this.chauffage, this.teleinfo);
 
     @Before
     public void before() {
         this.gui = new WindowCliInterface(this.featureWrapper, this.chauffage);
+        this.meteo.init(this.arduinoReader, "METEO");
+        this.chauffage.init(this.arduinoReader);
     }
 
     @Test

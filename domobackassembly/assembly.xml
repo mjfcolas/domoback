@@ -5,7 +5,6 @@
         <format>jar</format>
     </formats>
     <includeBaseDirectory>false</includeBaseDirectory>
-
     <moduleSets>
         <moduleSet>
             <useAllReactorProjects>true</useAllReactorProjects>

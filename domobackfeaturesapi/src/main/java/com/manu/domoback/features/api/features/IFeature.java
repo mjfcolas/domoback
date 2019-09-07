@@ -1,10 +1,11 @@
-package com.manu.domoback.features.api;
+package com.manu.domoback.features.api.features;
 
 import com.manu.domoback.features.api.listeners.DataListener;
 
 import java.util.Map;
 
 public interface IFeature {
+
     /**
      * Déroulement de la fonctionnalité
      */
@@ -44,4 +45,5 @@ public interface IFeature {
      * @param listener
      */
     void unsubscribe(DataListener listener);
+
 }

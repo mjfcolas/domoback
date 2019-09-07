@@ -1,18 +1,19 @@
 package com.manu.domoback;
 
 import com.manu.domoback.arduinoreader.ArduinoReader;
-import com.manu.domoback.arduinoreader.IArduinoReader;
+import com.manu.domoback.arduinoreader.ExternalDataController;
 import com.manu.domoback.cliinterface.display.WindowCliInterface;
 import com.manu.domoback.conf.CONFKEYS;
 import com.manu.domoback.conf.DomobackConf;
-import com.manu.domoback.database.factory.JdbcFactory;
 import com.manu.domoback.enums.FEATUREKEYS;
-import com.manu.domoback.features.*;
-import com.manu.domoback.features.api.IChauffage;
-import com.manu.domoback.features.api.IFeature;
-import com.manu.domoback.features.api.IFeatureWrapper;
-import com.manu.domoback.features.api.IMeteo;
-import com.manu.domoback.persistence.api.PersistenceApi;
+import com.manu.domoback.features.api.*;
+import com.manu.domoback.features.api.factory.FeatureFactoryLoader;
+import com.manu.domoback.features.api.factory.IChauffageFactory;
+import com.manu.domoback.features.api.factory.IFeatureFactory;
+import com.manu.domoback.features.api.factory.IMeteoFactory;
+import com.manu.domoback.features.api.features.IChauffage;
+import com.manu.domoback.features.api.features.IFeature;
+import com.manu.domoback.features.api.features.IMeteo;
 import com.manu.domoback.ui.UserInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,12 +23,15 @@ import java.util.Timer;
 public class App {
     private static final Logger LOGGER = LoggerFactory.getLogger(App.class.getName());
 
-    private static final PersistenceApi jdbc = JdbcFactory.getInstance();
-    private static final IArduinoReader arduinoReader = new ArduinoReader();
-    private static final IMeteo meteo = new Meteo(arduinoReader, jdbc, FEATUREKEYS.METEO.name());
-    private static final IMeteo meteo2 = new Meteo(arduinoReader, jdbc, FEATUREKEYS.METEO2.name());
-    private static final IChauffage chauffage = new Chauffage(arduinoReader, jdbc, 1000);
-    private static final IFeature teleinfo = new Teleinfo(jdbc);
+    private static final IMeteoFactory meteoFactory = FeatureFactoryLoader.getFeatureFactory("MeteoFactory");
+    private static final IChauffageFactory chauffageFactory = FeatureFactoryLoader.getFeatureFactory("ChauffageFactory");
+    private static final IFeatureFactory teleinfoFactory = FeatureFactoryLoader.getFeatureFactory("TeleinfoFactory");
+
+    private static final ExternalDataController arduinoReader = new ArduinoReader();
+    private static final IMeteo meteo = meteoFactory.instantiate();
+    private static final IMeteo meteo2 = meteoFactory.instantiate();
+    private static final IChauffage chauffage = chauffageFactory.instantiate();
+    private static final IFeature teleinfo = teleinfoFactory.instantiate();
     private static final IFeatureWrapper featureWrapper = new FeatureWrapper(meteo, meteo2, chauffage, teleinfo);
 
     private static final UserInterface cliInterface = new WindowCliInterface(featureWrapper, chauffage);
@@ -39,6 +43,10 @@ public class App {
     public static void main() {
 
         LOGGER.info("Start Program");
+        //Initialize features
+        meteo.init(arduinoReader, FEATUREKEYS.METEO.name());
+        meteo2.init(arduinoReader, FEATUREKEYS.METEO2.name());
+        chauffage.init(arduinoReader);
         //Initialisation de la communication série
         arduinoReader.initialize();
 

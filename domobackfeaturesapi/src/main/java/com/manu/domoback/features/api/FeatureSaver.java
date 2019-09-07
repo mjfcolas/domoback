@@ -1,6 +1,6 @@
-package com.manu.domoback.features;
+package com.manu.domoback.features.api;
 
-import com.manu.domoback.features.api.IFeature;
+import com.manu.domoback.features.api.features.IFeature;
 
 import java.util.TimerTask;
 

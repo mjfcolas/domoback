@@ -3,6 +3,7 @@ package com.manu.domoback.database.datasource;
 import com.manu.domoback.conf.CONFKEYS;
 import com.manu.domoback.conf.DomobackConf;
 import com.manu.domoback.exceptions.BusinessException;
+import com.manu.domoback.wificonnection.WifiConnecter;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,7 @@ public class DataSource {
             this.cpds.setJdbcUrl(url);
             this.cpds.setUser(userName);
             this.cpds.setPassword(password);
+            this.cpds.setTestConnectionOnCheckout(true);
             //Max connection age in order to avoid connection closing from outside causes (firewall, nat...)
             this.cpds.setMaxConnectionAge(120);
         } catch (final PropertyVetoException e) {
@@ -67,6 +69,9 @@ public class DataSource {
     }
 
     public Connection getConnection() throws SQLException {
+        if(!WifiConnecter.isAddressAvailable(DomobackConf.get(CONFKEYS.JDBC_TEST_URL))){
+            WifiConnecter.connect();
+        }
         return this.cpds.getConnection();
     }
 }

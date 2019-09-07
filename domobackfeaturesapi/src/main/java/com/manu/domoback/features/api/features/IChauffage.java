@@ -1,6 +1,14 @@
-package com.manu.domoback.features.api;
+package com.manu.domoback.features.api.features;
+
+import com.manu.domoback.arduinoreader.ExternalDataController;
 
 public interface IChauffage extends IFeature {
+
+    /**
+     * Initialize feature
+     * @param externalDataController
+     */
+    void init(ExternalDataController externalDataController);
 
     /**
      * Modifier le réglage de la temperature

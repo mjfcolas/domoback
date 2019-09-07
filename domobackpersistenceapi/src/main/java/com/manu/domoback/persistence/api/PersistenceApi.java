@@ -8,6 +8,11 @@ import java.util.Map;
 public interface PersistenceApi {
 
     /**
+     * Return the identifier of the implementation
+     * @return
+     */
+    String identify();
+    /**
      * Sauvegarde en BDD des informations météorologiques
      *
      * @param temperature température

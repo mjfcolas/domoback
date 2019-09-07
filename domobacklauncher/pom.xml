@@ -44,12 +44,17 @@
         </dependency>
         <dependency>
             <groupId>com.manu.domoback</groupId>
+            <artifactId>domoback-persistence</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.manu.domoback</groupId>
             <artifactId>domoback-persistence-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.manu.domoback</groupId>
-            <artifactId>domoback-persistence</artifactId>
+            <artifactId>domoback-service-loader</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -59,6 +64,18 @@
         <dependency>
             <groupId>com.googlecode.lanterna</groupId>
             <artifactId>lanterna</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
         </dependency>
     </dependencies>
 </project>

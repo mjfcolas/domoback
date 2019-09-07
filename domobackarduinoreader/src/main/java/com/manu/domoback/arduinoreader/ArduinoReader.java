@@ -21,14 +21,14 @@ import java.nio.charset.Charset;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ArduinoReader implements SerialPortEventListener, IArduinoReader {
+public class ArduinoReader implements SerialPortEventListener, ExternalDataController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ArduinoReader.class.getName());
 
     private static final String ERROR_MESSAGE = "NO_ANSWER";
     private static final String RECEPTION_PREFIX = "RECE";
 
-    private final ArduinoInfos infos = new ArduinoInfos();
+    private ArduinoInfos infos = new ArduinoInfos();
     private boolean isReady = false;
 
     private SerialPort serialPort;

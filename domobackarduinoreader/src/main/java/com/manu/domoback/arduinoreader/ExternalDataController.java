@@ -1,6 +1,6 @@
 package com.manu.domoback.arduinoreader;
 
-public interface IArduinoReader {
+public interface ExternalDataController {
 
     /**
      * Initialisation du reader

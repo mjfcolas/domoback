@@ -1,5 +1,7 @@
 package com.manu.domoback.features.api;
 
+import com.manu.domoback.features.api.features.IFeature;
+
 import java.util.Map;
 import java.util.Set;
 
