@@ -2,6 +2,8 @@ package com.manu.domoback.features;
 
 import com.manu.domoback.arduinoreader.ExternalDataController;
 import com.manu.domoback.arduinoreader.IExternalInfos;
+import com.manu.domoback.conf.CONFKEYS;
+import com.manu.domoback.conf.DomobackConf;
 import com.manu.domoback.features.api.features.IMeteo;
 import com.manu.domoback.features.api.enums.INFOS;
 import org.slf4j.Logger;
@@ -48,6 +50,9 @@ public class Meteo extends AbstractFeature implements IMeteo {
 
     @Override
     public boolean save() {
+        if("0".equals(DomobackConf.get(CONFKEYS.JDBC_ACTIVATED))){
+            return false;
+        }
         try {
             if (this.meteoInfos != null) {
                 int type = 0;

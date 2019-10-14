@@ -33,6 +33,8 @@ public class TeleinfoTest extends TestCase {
 
     @Test
     public void testRun() {
+        PowerMockito.mockStatic(DomobackConf.class);
+        Mockito.when(DomobackConf.get(CONFKEYS.TELEINFO_PROCESSRECORD)).thenReturn("0");
         this.teleinfo.run();
     }
 

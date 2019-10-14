@@ -87,7 +87,7 @@ public class Carre {
     private boolean acceptCritereLissage(final int startIndex) {
         boolean critereAccepte = true;
         for (int j = startIndex; j < startIndex + this.pointsPourChanger; j++) {
-            if (j < this.outputRawSignal.size() && this.outputRawSignal.get(startIndex) != this.outputRawSignal.get(j)) {
+            if (j < this.outputRawSignal.size() && !this.outputRawSignal.get(startIndex).equals(this.outputRawSignal.get(j))) {
                 critereAccepte = false;
             }
         }
@@ -113,7 +113,7 @@ public class Carre {
 
         int localSum = 0;
         for (int i = 1; i < this.outputTreatedSignal.size(); i++) {
-            if (this.outputTreatedSignal.get(i - 1) != this.outputTreatedSignal.get(i)) {
+            if (!this.outputTreatedSignal.get(i - 1).equals(this.outputTreatedSignal.get(i))) {
                 final double periodNumberDouble = (double) localSum / (double) this.pointsDansPeriode;
                 final long periodNumberLong = Math.round(periodNumberDouble);
                 //Remplissage de la liste de bits à partir de la liste de points traités

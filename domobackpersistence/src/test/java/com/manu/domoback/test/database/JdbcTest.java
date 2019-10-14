@@ -194,8 +194,11 @@ public class JdbcTest extends TestCase {
     }
 
     @Test
-    public void testSetTemp() {
-        this.jdbc.setTemp(25, new Date());
+    public void testSetTemp() throws ParseException, SQLException{
+        this.initializeData("tempChauff.sql");
+        final SimpleDateFormat sdf = new SimpleDateFormat("HHmmss");
+        this.jdbc.setTemp(25, sdf.parse("120000"));
+        assertEquals(new Integer(25), this.jdbc.getTemp(sdf.parse("123000")));
     }
 
     @Test

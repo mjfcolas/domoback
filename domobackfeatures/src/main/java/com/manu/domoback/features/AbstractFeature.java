@@ -46,8 +46,4 @@ public abstract class AbstractFeature implements IFeature {
 
     public AbstractFeature() {
     }
-
-    public void setJdbc(PersistenceApi jdbc){
-        this.jdbc = jdbc;
-    }
 }

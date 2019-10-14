@@ -1,9 +1,10 @@
 package com.manu.domoback.features;
 
+import com.manu.domoback.features.api.factory.IFeatureFactory;
 import com.manu.domoback.features.api.features.IMeteo;
 import com.manu.domoback.features.api.factory.IMeteoFactory;
 
-public class MeteoFactory extends AbstractFeatureFactory implements IMeteoFactory {
+public class MeteoFactory implements IMeteoFactory, IFeatureFactory {
     @Override
     public String identify() {
         return "MeteoFactory";

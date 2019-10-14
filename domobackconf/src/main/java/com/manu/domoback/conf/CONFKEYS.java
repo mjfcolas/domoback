@@ -12,6 +12,7 @@ public enum CONFKEYS {
 
     CHAUFFAGE_ASKTIME("chauffage.asktime"),
 
+    JDBC_ACTIVATED("jdbc.activated"),
     JDBC_DRIVER("jdbc.driver"),
     JDBC_URL("jdbc.url"),
     JDBC_TEST_URL("jdbc.test.url"),

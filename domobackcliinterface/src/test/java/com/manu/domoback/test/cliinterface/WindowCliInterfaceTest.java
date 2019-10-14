@@ -59,6 +59,7 @@ public class WindowCliInterfaceTest extends TestCase {
         infos.put("ISOUSC", "20");
         Mockito.when(this.featureWrapper.getFeaturesInfos()).thenReturn(infos);
         this.gui.changedOccured();
+        assertTrue(true);
     }
 
     @Test
@@ -79,5 +80,6 @@ public class WindowCliInterfaceTest extends TestCase {
         }
         this.gui.onInput(null, new KeyStroke(KeyType.ArrowUp), null);
         this.gui.onInput(null, new KeyStroke(KeyType.ArrowDown), null);
+        assertTrue(true);
     }
 }

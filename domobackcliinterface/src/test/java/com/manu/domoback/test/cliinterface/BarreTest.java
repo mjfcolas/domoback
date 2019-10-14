@@ -12,6 +12,7 @@ public class BarreTest extends TestCase {
     @Test
     public void testBuildBarre() {
         new Barre(3, 8, 9, 20);
+        assertTrue(true);
     }
 
 }

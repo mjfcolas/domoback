@@ -11,6 +11,19 @@
 
     <artifactId>domoback-launcher</artifactId>
 
+    <build>
+        <plugins>
+            <!-- Librairie externe -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-Djava.library.path=../domobackconf/src/main/native</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>com.manu.domoback</groupId>

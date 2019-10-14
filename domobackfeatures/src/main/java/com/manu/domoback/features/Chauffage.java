@@ -3,6 +3,8 @@ package com.manu.domoback.features;
 import com.manu.domoback.arduinoreader.ExternalDataController;
 import com.manu.domoback.arduinoreader.IExternalInfos;
 import com.manu.domoback.common.UnsureBoolean;
+import com.manu.domoback.conf.CONFKEYS;
+import com.manu.domoback.conf.DomobackConf;
 import com.manu.domoback.features.api.features.IChauffage;
 import com.manu.domoback.features.api.enums.INFOS;
 import com.manu.domoback.features.chauffage.ChauffageInfo;
@@ -40,6 +42,11 @@ public class Chauffage extends AbstractFeature implements IChauffage {
     @Override
     public void run() {
         LOGGER.trace("Chauffage.run");
+        if("0".equals(DomobackConf.get(CONFKEYS.JDBC_ACTIVATED))){
+            String errorMessage = "La connection à la base de donnée doit être activée pour la commande du chauffage";
+            LOGGER.error(errorMessage);
+            throw new RuntimeException(errorMessage);
+        }
         try {
             this.fillInfos();
             if (this.arduinoReader.isReady()) {

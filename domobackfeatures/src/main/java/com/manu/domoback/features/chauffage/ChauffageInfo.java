@@ -27,7 +27,7 @@ public class ChauffageInfo implements IChauffageInfo {
 
     @Override
     public void setChauffageMode(final Boolean chauffageMode) {
-        if (this.chauffageModeAttr != chauffageMode) {
+        if (!chauffageMode.equals(this.chauffageModeAttr)) {
             this.hasChangedModeAttr = true;
         }
         this.chauffageModeAttr = chauffageMode;

@@ -32,7 +32,6 @@ public class ChauffageTest extends TestCase {
     private ExternalDataController arduinoReader;
     @Mock
     private PersistenceApi jdbc;
-
     @BeforeClass
     public static void beforeClass() {
 
@@ -73,7 +72,10 @@ public class ChauffageTest extends TestCase {
         Mockito.when(this.jdbc.getHourModeChauffage()).thenReturn(false);
         Mockito.when(this.jdbc.getCommandeChauffage()).thenReturn(false);
         this.chauffage.run();
-        this.chauffage.getInfos();
+        Map<String, String> result = this.chauffage.getInfos();
+        assertEquals("OFF", result.get("MODECHAUFF"));
+        assertEquals("25", result.get("TEMPCHAUFFTIME23"));
+        assertEquals("OFF", result.get("TEMPHOURMODE"));
     }
 
     /**

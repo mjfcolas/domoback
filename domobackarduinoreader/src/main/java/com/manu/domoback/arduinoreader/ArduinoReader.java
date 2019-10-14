@@ -1,8 +1,8 @@
 package com.manu.domoback.arduinoreader;
 
+import com.manu.domoback.arduinoreader.enums.InfoKeys;
 import com.manu.domoback.conf.CONFKEYS;
 import com.manu.domoback.conf.DomobackConf;
-import com.manu.domoback.arduinoreader.enums.InfoKeys;
 import com.manu.domoback.serial.CommPortManager;
 import com.manu.domoback.serial.ICommPortWrapper;
 import com.manu.domoback.serial.exceptions.PortNotFoundException;
@@ -17,7 +17,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -157,7 +157,7 @@ public class ArduinoReader implements SerialPortEventListener, ExternalDataContr
         if (toSend != null) {
             try {
                 LOGGER.info("TOA {}", toSend);
-                final byte[] bytes = toSend.getBytes(Charset.forName("UTF-8"));
+                final byte[] bytes = toSend.getBytes(StandardCharsets.UTF_8);
                 final byte[] preparedMessage = new byte[COMMAND_SIZE];
                 for (int i = 0; i < bytes.length; i++) {
                     preparedMessage[i] = bytes[i];

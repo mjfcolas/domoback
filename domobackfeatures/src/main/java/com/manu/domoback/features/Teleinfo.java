@@ -60,6 +60,9 @@ public class Teleinfo extends AbstractFeature {
 
     @Override
     public boolean save() {
+        if("0".equals(DomobackConf.get(CONFKEYS.JDBC_ACTIVATED))){
+            return false;
+        }
         try {
             final String iInstStr = this.trameInfos.get(INFOS.IINST.name());
             final String hcAmountStr = this.trameInfos.get(INFOS.HCHC.name());
