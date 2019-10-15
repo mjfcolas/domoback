@@ -43,7 +43,7 @@ public class TeleinfoTest extends TestCase {
     public void testSave() throws SQLException {
 
         PowerMockito.mockStatic(DomobackConf.class);
-        Mockito.when(DomobackConf.get(CONFKEYS.TELEINFO_FILETOUSE)).thenReturn("/home/emmanuel/Documents/Traitement du signal/back/linky.wav");
+        Mockito.when(DomobackConf.get(CONFKEYS.TELEINFO_FILETOUSE)).thenReturn("linky.wav");
         Mockito.when(DomobackConf.get(CONFKEYS.TELEINFO_PROCESSRECORD)).thenReturn("0");
         Mockito.when(DomobackConf.get(CONFKEYS.TELEINFO_TRAMETIME)).thenReturn("1");
         Mockito.doNothing().when(this.jdbc).saveTeleinfos(Mockito.any(),Mockito.any(), Mockito.any());

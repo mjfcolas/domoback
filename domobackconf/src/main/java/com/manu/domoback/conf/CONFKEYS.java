@@ -7,6 +7,11 @@ public enum CONFKEYS {
     TELEINFO_TRAMETIME("teleinfo.trametime"),
     TELEINFO_ASKTIME("teleinfo.asktime"),
 
+    TELEINFO_GAIN("teleinfo.gain"),
+    TELEINFO_OFFSET("teleinfo.offset"),
+    TELEINFO_LIMITE("teleinfo.limite"),
+    TELEINFO_INVERSE("teleinfo.inverse"),
+
     METEO_DBSAVETIME("meteo.dbsavetime"),
     METEO_ASKTIME("meteo.asktime"),
 

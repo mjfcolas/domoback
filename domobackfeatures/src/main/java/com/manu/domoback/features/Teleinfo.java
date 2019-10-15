@@ -18,12 +18,17 @@ public class Teleinfo extends AbstractFeature {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Teleinfo.class.getName());
 
-    private final ProcessSignal signalProcessor = new ProcessSignal(DomobackConf.get(CONFKEYS.TELEINFO_FILETOUSE),
-            "1".equals(DomobackConf.get(CONFKEYS.TELEINFO_PROCESSRECORD)));
+    private final ProcessSignal signalProcessor;
     private Map<String, String> trameInfos = new HashMap<>();
 
     public Teleinfo() {
         super();
+        double gain = Double.parseDouble(DomobackConf.get(CONFKEYS.TELEINFO_GAIN));
+        int offset= Integer.parseInt(DomobackConf.get(CONFKEYS.TELEINFO_OFFSET));
+        int limite= Integer.parseInt(DomobackConf.get(CONFKEYS.TELEINFO_LIMITE));
+        boolean inverse= "1".equals(DomobackConf.get(CONFKEYS.TELEINFO_INVERSE));
+        this.signalProcessor = new ProcessSignal(DomobackConf.get(CONFKEYS.TELEINFO_FILETOUSE),
+                "1".equals(DomobackConf.get(CONFKEYS.TELEINFO_PROCESSRECORD)), gain, offset, limite, inverse);
     }
 
     @Override
@@ -60,7 +65,7 @@ public class Teleinfo extends AbstractFeature {
 
     @Override
     public boolean save() {
-        if("0".equals(DomobackConf.get(CONFKEYS.JDBC_ACTIVATED))){
+        if ("0".equals(DomobackConf.get(CONFKEYS.JDBC_ACTIVATED))) {
             return false;
         }
         try {

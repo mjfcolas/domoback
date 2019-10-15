@@ -12,17 +12,19 @@ public class ProcessSignal {
     private final String filePath;
     private static final float SAMPLE_RATE = 96000;
     private final boolean processRecord;
+    private final Reglage reglage;
 
-    public ProcessSignal(final String filePath, final boolean processRecord) {
+
+    public ProcessSignal(final String filePath, final boolean processRecord, double gain, int offset, int limite, boolean inverse) {
         this.filePath = filePath;
         this.processRecord = processRecord;
+        //Reglage asus : 100, 0, 1000, true
+        //Reglage old eeePC: 20, -17000, 1000, false
+        this.reglage =new Reglage(gain, offset, limite, inverse);
     }
 
     public List<Trame> getTrames(final long recordTime) throws UnsupportedAudioFileException, IOException {
 
-        //Reglage asus : 100, 0, 1000, true
-        //Reglage old eeePC: 20, -17000, 1000, false
-        final Reglage reglage = new Reglage(20, -17000, 1000, false);
 
         if (this.processRecord) {
             final JavaSoundRecorder recorder = new JavaSoundRecorder(this.filePath, ProcessSignal.SAMPLE_RATE, 16, 1, recordTime);

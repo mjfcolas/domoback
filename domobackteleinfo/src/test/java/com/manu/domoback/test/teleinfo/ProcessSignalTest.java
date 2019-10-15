@@ -22,7 +22,7 @@ public class ProcessSignalTest extends TestCase {
     @Before
     public void before() {
         signalProcessor = new ProcessSignal(DomobackConf.get(CONFKEYS.TELEINFO_FILETOUSE),
-                false);
+                false,20, -17000, 1000, false);
     }
 
     @Test

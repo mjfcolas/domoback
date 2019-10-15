@@ -25,6 +25,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -65,7 +68,8 @@ public class WindowCliInterface implements DataListener, WindowListener, UserInt
         theme = new SimpleTheme(TextColor.ANSI.BLACK, TextColor.ANSI.BLACK);
         theme.setWindowDecorationRenderer(new EmptyWindowDecorationRenderer());
         try {
-            MESSAGE_BUNDLE.load(WindowCliInterface.class.getResourceAsStream("/messages.properties"));
+            InputStream stream = WindowCliInterface.class.getResourceAsStream("/messages.properties");
+            MESSAGE_BUNDLE.load(new InputStreamReader(stream, StandardCharsets.UTF_8));
         } catch (IOException e) {
             LOGGER.error("Fichier de config non trouvé");
             System.exit(-1);
