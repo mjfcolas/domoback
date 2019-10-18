@@ -139,4 +139,8 @@ public class Carre {
             }
         }
     }
+
+    public List<Boolean> getOutputRawSignal() {
+        return outputRawSignal;
+    }
 }

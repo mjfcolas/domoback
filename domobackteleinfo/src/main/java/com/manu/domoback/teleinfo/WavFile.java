@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WavFile {
-    private static final Logger LOGGER = LoggerFactory.getLogger(WavFile.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(com.manu.domoback.teleinfo.WavFile.class.getName());
 
     private final int sampleSize;
     private final long framesCount;
@@ -25,7 +25,7 @@ public class WavFile {
     private final byte[] data;      // wav bytes
     private final AudioFormat af;
 
-    WavFile(final File file) throws UnsupportedAudioFileException, IOException {
+    public WavFile(final File file) throws UnsupportedAudioFileException, IOException {
         if (!file.exists()) {
             throw new FileNotFoundException(file.getAbsolutePath());
         }
@@ -88,7 +88,7 @@ public class WavFile {
                 .order(ByteOrder.LITTLE_ENDIAN).getInt();
     }
 
-    List<Integer> getSignal() {
+    public List<Integer> getSignal() {
 
         final long total = this.getFramesCount();
         final List<Integer> result = new ArrayList<>((int) total);
@@ -107,7 +107,7 @@ public class WavFile {
         return result;
     }
 
-    int getSampleRate() {
+    public int getSampleRate() {
         return this.sampleRate;
     }
 }

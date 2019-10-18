@@ -13,21 +13,20 @@ public class ProcessSignal {
     private static final float SAMPLE_RATE = 96000;
     private final boolean processRecord;
     private final Reglage reglage;
+    private final int mixerIndex;
 
-
-    public ProcessSignal(final String filePath, final boolean processRecord, double gain, int offset, int limite, boolean inverse) {
+    public ProcessSignal(final String filePath, final boolean processRecord, double gain, int offset, boolean redresser, boolean inverse, int mixer) {
         this.filePath = filePath;
         this.processRecord = processRecord;
-        //Reglage asus : 100, 0, 1000, true
-        //Reglage old eeePC: 20, -17000, 1000, false
-        this.reglage =new Reglage(gain, offset, limite, inverse);
+        this.reglage =new Reglage(gain, offset, redresser, inverse);
+        this.mixerIndex = mixer;
     }
 
     public List<Trame> getTrames(final long recordTime) throws UnsupportedAudioFileException, IOException {
 
 
         if (this.processRecord) {
-            final JavaSoundRecorder recorder = new JavaSoundRecorder(this.filePath, ProcessSignal.SAMPLE_RATE, 16, 1, recordTime);
+            final JavaSoundRecorder recorder = new JavaSoundRecorder(this.filePath, SAMPLE_RATE, 16, 1, recordTime, mixerIndex);
             recorder.record();
         }
 
@@ -36,23 +35,25 @@ public class ProcessSignal {
 
         List<Integer> signal = wav.getSignal();
 
-        final Offset offset = new Offset(reglage.offset);
-        signal = offset.processSignal(signal);
-        final Limiteur limiteur = new Limiteur(reglage.limite);
-        signal = limiteur.processSignal(signal);
+        List<Integer> signalRedresse = signal;
+        if (reglage.isRedresser()) {
+            final Redresseur redresseur = new Redresseur();
+            signalRedresse = redresseur.processSignal(signal);
+        }
 
-        final int fSignal = 1200;
-        final int fEchant = wav.getSampleRate();
+        int fc = 1200;
+        int fe = wav.getSampleRate();
+        final OrderOne filtrePasseBas = new OrderOne(reglage.getGain(), fc, fe);
+        List<Integer> signalLowCuted = filtrePasseBas.processSignal(signalRedresse, true);
 
-        final List<Integer> signalFiltre;
-        final PasseBas filtre = new PasseBas(reglage.gain, fSignal, fEchant);
-        signalFiltre = filtre.processSignal(signal);
+        final Offset offset = new Offset(reglage.getOffset());
+        List<Integer> offsetedSignal = offset.processSignal(signalLowCuted);
 
         final CarreParam carreParam = new CarreParam();
-        carreParam.setInverseBits(reglage.inverse);
-        carreParam.setFrequence(fSignal);
-        carreParam.setSampleRate(fEchant);
-        final Carre carre = new Carre(carreParam, signalFiltre);
+        carreParam.setInverseBits(reglage.isInverse());
+        carreParam.setFrequence(fc);
+        carreParam.setSampleRate(fe);
+        final Carre carre = new Carre(carreParam, offsetedSignal);
 
         carre.processSignal();
         carre.lisserSignal();

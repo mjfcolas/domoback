@@ -200,4 +200,7 @@ public class Trame {
         return this.inError;
     }
 
+    public List<Character> getCaracteres() {
+        return caracteres;
+    }
 }

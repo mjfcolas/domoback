@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A sample program is to demonstrate how to record sound in Java
@@ -13,7 +15,7 @@ import java.io.IOException;
  */
 public class JavaSoundRecorder {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JavaSoundRecorder.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(com.manu.domoback.teleinfo.JavaSoundRecorder.class.getName());
 
     // record duration, in milliseconds
     private long recordTime;
@@ -23,6 +25,7 @@ public class JavaSoundRecorder {
     private float sampleRate;
     private int sampleSizeInBits;
     private int channels;
+    private int mixerIndex;
 
     // format of audio file
     AudioFileFormat.Type fileType = AudioFileFormat.Type.WAVE;
@@ -30,12 +33,13 @@ public class JavaSoundRecorder {
     // the line from which audio data is captured
     TargetDataLine line;
 
-    public JavaSoundRecorder(String filePath, float sampleRate, int sampleSizeInBits, int channels, long recordTime) {
+    public JavaSoundRecorder(String filePath, float sampleRate, int sampleSizeInBits, int channels, long recordTime, int mixerIndex) {
         this.wavFile = new File(filePath);
         this.sampleRate = sampleRate;
         this.sampleSizeInBits = sampleSizeInBits;
         this.channels = channels;
         this.recordTime = recordTime;
+        this.mixerIndex = mixerIndex;
     }
 
     /**
@@ -46,10 +50,20 @@ public class JavaSoundRecorder {
                 this.channels, true, true);
     }
 
+    public static List<String> getMixers(){
+        List<String> result = new ArrayList<>();
+        Mixer.Info[] mixers = AudioSystem.getMixerInfo();
+        for (Mixer.Info mixerInfo : mixers){
+            result.add(mixerInfo.toString());
+        }
+        return result;
+    }
+
     /**
      * Captures the sound and record into a WAV file
      */
     void start() {
+
         try {
             AudioFormat format = getAudioFormat();
             DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
@@ -59,7 +73,8 @@ public class JavaSoundRecorder {
                 LOGGER.error("Line not supported");
                 System.exit(0);
             }
-            line = (TargetDataLine) AudioSystem.getLine(info);
+            Mixer.Info[] mixers = AudioSystem.getMixerInfo();
+            line = AudioSystem.getTargetDataLine(format, mixers[mixerIndex]);
             line.open(format);
             line.start();   // start capturing
 
@@ -89,7 +104,7 @@ public class JavaSoundRecorder {
     public void record() {
         // start recording
 
-        JavaSoundRecorder self = this;
+        com.manu.domoback.teleinfo.JavaSoundRecorder self = this;
         //Stopper
         new Thread(() -> {
             try {

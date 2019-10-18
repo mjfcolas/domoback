@@ -9,8 +9,9 @@ public enum CONFKEYS {
 
     TELEINFO_GAIN("teleinfo.gain"),
     TELEINFO_OFFSET("teleinfo.offset"),
-    TELEINFO_LIMITE("teleinfo.limite"),
+    TELEINFO_REDRESSER("teleinfo.redresser"),
     TELEINFO_INVERSE("teleinfo.inverse"),
+    TELEINFO_MIXER("teleinfo.mixer"),
 
     METEO_DBSAVETIME("meteo.dbsavetime"),
     METEO_ASKTIME("meteo.asktime"),
